@@ -1,0 +1,188 @@
+import json
+import os
+
+SUBMISSION_PATH = "/Users/priyanshu_kumar/.gemini/antigravity/scratch/ivy-homes-chennai/submission.json"
+
+answers = {
+    "total_listing_records": 4100,
+    "unique_properties": 4074,
+    "active_listings": 3233,
+    "corrupt_listing_ids": [
+        "100-4000397", "100-4000449", "100-4000457", "100-4000491", "100-4000738",
+        "100-4001530", "100-4001703", "100-4002832", "100-4002961", "DWE-4000236",
+        "DWE-4000412", "DWE-4000824", "DWE-4000891", "DWE-4001368", "DWE-4001424",
+        "DWE-4001442", "DWE-4002045", "DWE-4002247", "DWE-4002374", "DWE-4002712",
+        "DWE-4002806", "DWE-4003067", "MAG-4000145", "MAG-4000283", "MAG-4000883",
+        "MAG-4001981", "MAG-4002491", "MAG-4002776", "MAG-4003100", "SQU-4000224",
+        "SQU-4000308", "SQU-4000459", "SQU-4000583", "SQU-4001225", "SQU-4001601",
+        "SQU-4002483", "ZER-4000021", "ZER-4000995", "ZER-4001161", "ZER-4001287",
+        "ZER-4001669", "ZER-4001686", "ZER-4001726", "ZER-4001844", "ZER-4002352"
+    ],
+    "total_monthly_rent": 4590100,
+    "avg_price_per_sqft_2bhk": 9844.53,
+    "costliest_project": {
+        "project_id": "P40224",
+        "price_max_inr": 37800000
+    },
+    "listings_last_7_days": 122,
+    "fake_listing_ids": [
+        "100-4001484", "100-4001961", "DWE-4000745", "MAG-4000075", "MAG-4000870",
+        "MAG-4001467", "MAG-4002092", "SQU-4001342", "ZER-4002683"
+    ],
+    "projects_with_wrong_listing_count": 336
+}
+
+findings = [
+    {
+        "endpoint": "*",
+        "category": "auth",
+        "documented": "Every request must carry the API key appended as a query parameter: ?api_key=IVY26-XXXXXXXXXXXX",
+        "actual": "Query parameter ?api_key is rejected with HTTP 401 ('send your key in the X-API-Key request header, not as a query parameter'). Requests must provide X-API-Key header, and data endpoints additionally require Authorization: Bearer <token> from /auth/login.",
+        "how_found": "Sent probe GET request with query parameter ?api_key and received explicit 401 error message specifying the X-API-Key header requirement.",
+        "impact": "All unauthenticated requests using query parameters fail immediately with 401.",
+        "evidence": []
+    },
+    {
+        "endpoint": "/auth/login",
+        "category": "auth",
+        "documented": "Returns 'token' with 'expires_in': 86400 (24 hours). Claims 'there is no refresh flow'.",
+        "actual": "Returns 'access_token' (not 'token') with 'expires_in': 900 (15 minutes), accompanied by a 'refresh_token' and 'refresh_url': '/auth/refresh'. Calling POST /auth/refresh with refresh_token yields fresh access tokens.",
+        "how_found": "Inspected JSON payload from successful POST /auth/login and tested subsequent POST /auth/refresh call.",
+        "impact": "Applications that do not refresh tokens disconnect after 15 minutes instead of lasting 24 hours.",
+        "evidence": []
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "pagination",
+        "documented": "Takes 'page' (1-indexed, default 1) and 'limit' (max 200). Envelope contains 'page', 'page_size', 'total', 'results'.",
+        "actual": "'page' parameter is quietly ignored. Pagination requires 'offset' (0-indexed). Max 'limit' is hard-capped at 50 (passing limit=200 returns 50). Response envelope contains 'limit', 'offset', 'count', 'total', 'has_more', 'results'.",
+        "how_found": "Sent requests with page=1 vs page=2 and noticed identical results; inspected envelope keys and verified offset parameter changes returned slices.",
+        "impact": "Iterating by page repeats offset 0 indefinitely; requesting limit > 50 silently truncates to 50.",
+        "evidence": []
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "completeness",
+        "documented": "'total is the exact number of records matching your filters. To fetch every record, read total, divide by your limit, and request that many pages.' (claimed 3950 for listings, 1493 for rentals, 443 for projects).",
+        "actual": "The 'total' envelope attribute is hardcoded and stale. Continuing to paginate while 'has_more' is true retrieves 4100 listings, 1550 rentals, and 460 projects beyond the reported total.",
+        "how_found": "Queried offsets beyond the reported 'total' (e.g. offset=3950) and observed has_more=True with distinct valid records up to offset 4050 (4100 total records).",
+        "impact": "Clients that stop paging when accumulated records reach 'total' miss 150 listings, 57 rentals, and 17 projects.",
+        "evidence": ["MAG-4002855", "ZER-4001779", "SQU-4003878", "R4001501", "R4001502", "P40451", "P40452"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "filters",
+        "documented": "Filters by 'min_price', 'max_price', 'furnishing', and 'project_id'.",
+        "actual": "Parameters 'min_price', 'max_price', 'furnishing', and 'project_id' are quietly ignored by the server and return all records. Only 'bhk', 'locality', and 'property_type' apply server-side filtering.",
+        "how_found": "Queried /v1/listings with min_price=10000000, max_price=5000000, furnishing=semi-furnished, and project_id=P40244; all returned total=3950 unfiltered records.",
+        "impact": "Clients relying on server-side price, furnishing, or project filtering display completely unfiltered results.",
+        "evidence": ["P40244"]
+    },
+    {
+        "endpoint": "/v1/analytics/summary",
+        "category": "missing_endpoint",
+        "documented": "GET /v1/analytics/summary returns pre-computed aggregates for the city.",
+        "actual": "Returns HTTP 404 Not Found. Aggregates and city insights must be calculated on the client side from listings, rentals, and projects collections.",
+        "how_found": "GET request to /v1/analytics/summary returned 404 Not Found.",
+        "impact": "Dashboard screens attempting to call this endpoint fail without client-side fallback aggregation.",
+        "evidence": []
+    },
+    {
+        "endpoint": "/v1/listing/{id}",
+        "category": "missing_endpoint",
+        "documented": "Single listing detail is served at GET /v1/listing/{listing_id} (singular) and similar listings at GET /v1/listings/{listing_id}/similar.",
+        "actual": "GET /v1/listing/{id} (singular) and GET /v1/listings/{id}/similar return 404 Not Found. Individual listings are served at plural path GET /v1/listings/{id}.",
+        "how_found": "Tested GET requests to singular /v1/listing/MAG-4001518 (404) vs plural /v1/listings/MAG-4001518 (200 OK).",
+        "impact": "Direct navigation to documented single-listing URL results in 404 error.",
+        "evidence": ["MAG-4001518"]
+    },
+    {
+        "endpoint": "/v1/favourites",
+        "category": "missing_endpoint",
+        "documented": "Favourites API documented at GET /v1/favourites, POST /v1/favourites with body {'id': '...'}, and DELETE /v1/favourites/{id}.",
+        "actual": "GET /v1/favourites returns 404 Not Found. The active endpoints are GET /v1/saved, POST /v1/saved requiring body {'listing_id': '...'} (passing 'id' returns 422 Unprocessable Entity), and DELETE /v1/saved/{listing_id}.",
+        "how_found": "Probed candidate endpoints, discovered 200 on /v1/saved, verified 422 on {'id': ...}, and confirmed 201 Created on {'listing_id': ...}.",
+        "impact": "Favourites operations fail completely if using documented endpoint or schema.",
+        "evidence": ["MAG-4001518"]
+    },
+    {
+        "endpoint": "/v1/projects",
+        "category": "units",
+        "documented": "Money: Indian rupees, integer, everywhere in the API. 'price_min' and 'price_max' are in rupees.",
+        "actual": "Project prices are floating-point numbers in Crores (for values < 15, e.g. 1.95, 3.78) or Lakhs (for values >= 15, e.g. 66.1, 99.8), not integer Indian rupees.",
+        "how_found": "Analyzed project records where price_min was 66.1 and price_max was 1.95 for 771-2055 sqft apartments.",
+        "impact": "Unconverted project prices display absurd figures (e.g. Rs 3.78 instead of Rs 3.78 Crores / 37,800,000).",
+        "evidence": ["P40001", "P40002", "P40003", "P40004", "P40006", "P40224", "P40441", "P40071"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "units",
+        "documented": "Area: Square feet, integer, everywhere in the API.",
+        "actual": "310 listings from source magichomes provide 'carpet_area' and 'super_built_up_area' in square meters instead of square feet (values 60-200 sq m, corresponding to 650-2150 sq ft).",
+        "how_found": "Identified bimodal distribution of carpet areas where magichomes records had areas between 67 and 150 sq ft for 2-4 BHK units.",
+        "impact": "Unadjusted carpet areas produce 10x inflated price-per-sqft calculations (~Rs 100,000/sqft instead of ~Rs 9,800/sqft).",
+        "evidence": ["MAG-4002264", "MAG-4000126", "MAG-4001884", "MAG-4000603", "MAG-4003180", "MAG-4003464", "MAG-4002993", "MAG-4002751", "MAG-4003807", "MAG-4000863", "MAG-4001756", "MAG-4002887", "MAG-4000819", "MAG-4000330", "MAG-4002594", "MAG-4003717"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "timestamps",
+        "documented": "Timestamps: ISO 8601, UTC, Z suffix, everywhere in the API.",
+        "actual": "Listing 'posted_at' timestamps are formatted as naive local IST datetimes without the Z suffix or timezone offset (e.g. '2026-09-09T23:50:00').",
+        "how_found": "Checked all 4100 listings; 100% omit the trailing 'Z' and offset, matching local IST time frozen at 2026-09-10T00:00:00+05:30.",
+        "impact": "Naive parsing assuming UTC misinterprets listing publication times by 5 hours and 30 minutes.",
+        "evidence": ["DWE-4001396", "100-4001861", "DWE-4003207", "SQU-4003751", "SQU-4000704"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "duplicates",
+        "documented": "Each listing corresponds to exactly one physical property. Every listing_id is globally unique.",
+        "actual": "26 pairs of listings describe identical physical units cross-posted on different portals (matching apartment, floor, carpet area, bedrooms, locality), differing only by minor GPS jitter (~40m) and slight pricing variations.",
+        "how_found": "Grouped listings by (apartment_name, locality, floor, carpet_area, bedroom, property_type) and computed coordinate delta.",
+        "impact": "Property counts and inventory metrics are inflated if listings are not deduplicated.",
+        "evidence": ["MAG-4003885", "MAG-4002617", "100-4000289", "ZER-4003784", "ZER-4003993", "ZER-4002843", "DWE-4003817", "100-4000536", "100-4003175", "MAG-4000235", "100-4003824", "SQU-4002261", "MAG-4003243", "MAG-4002609", "MAG-4002595", "ZER-4003793", "SQU-4003836", "100-4002567", "DWE-4002030", "DWE-4003517"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "data_quality",
+        "documented": "Returns active sale listings; safe to show to a user.",
+        "actual": "45 listings describe physically impossible properties: 9 negative prices, 9 floors exceeding total building floors, 9 carpet areas exceeding super built-up areas, 9 non-plot residential units with 0 bedrooms/bathrooms, and 9 listings with swapped latitude/longitude coordinates placing them in the Arctic Ocean.",
+        "how_found": "Audited physical consistency constraints across all numeric and geospatial fields.",
+        "impact": "Showing these listings ruins application credibility and corrupts statistical models.",
+        "evidence": ["100-4000397", "100-4000449", "100-4000457", "100-4000491", "100-4000738", "100-4001530", "100-4001703", "100-4002832", "100-4002961", "DWE-4000236", "DWE-4000412", "DWE-4000824", "DWE-4000891", "DWE-4001368", "DWE-4001424", "DWE-4001442", "DWE-4002045", "DWE-4002247", "DWE-4002374", "DWE-4002712"]
+    },
+    {
+        "endpoint": "/v1/listings",
+        "category": "fraud",
+        "documented": "Returns active sale listings.",
+        "actual": "9 listings are honeypots that post monthly rental amounts (Rs 6,470 - 16,320) as sale prices for 2-4 BHK units to artificially appear at the top of price-sorted queries and capture buyer enquiries.",
+        "how_found": "Queried listings with price < 100,000 INR and verified that all 9 are multi-bedroom sale listings priced at fractional rent levels.",
+        "impact": "Distorts lowest-price searches and corrupts valuation benchmarks.",
+        "evidence": ["100-4001484", "100-4001961", "DWE-4000745", "MAG-4000075", "MAG-4000870", "MAG-4001467", "MAG-4002092", "SQU-4001342", "ZER-4002683"]
+    },
+    {
+        "endpoint": "/v1/projects",
+        "category": "consistency",
+        "documented": "'total_listings is recomputed whenever a listing is added or withdrawn, so it always agrees with what GET /v1/listings?project_id=... returns.'",
+        "actual": "For 336 out of 460 projects, reported 'total_listings' does not match the count of retrievable listings referencing that project_id. Additionally, GET /v1/listings?project_id=... quietly ignores the parameter.",
+        "how_found": "Counted listings referencing each project_id in /v1/listings and compared against project.total_listings.",
+        "impact": "Project detail screens display contradictory available inventory counts.",
+        "evidence": ["P40001", "P40003", "P40004", "P40006", "P40008", "P40009", "P40010", "P40011", "P40014", "P40015", "P40018", "P40019", "P40025"]
+    }
+]
+
+submission = {
+    "api_key": "IVY26-FF1DA1A6D2AB",
+    "candidate": {
+        "name": "Priyanshu Kumar",
+        "email": "priyanshu_kumar@mnnit.ac.in",
+        "repo_url": "https://github.com/priyanshu-kumar/ivy-homes-chennai",
+        "demo_url": "https://ivy-homes-chennai.vercel.app"
+    },
+    "answers": answers,
+    "findings": findings
+}
+
+with open(SUBMISSION_PATH, "w", encoding="utf-8") as f:
+    json.dump(submission, f, indent=2)
+
+print(f"Successfully generated {SUBMISSION_PATH}!")
