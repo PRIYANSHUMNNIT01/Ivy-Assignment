@@ -1,21 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchProjects } from "../../services/api";
 import {
-  Building2,
-  Filter,
-  MapPin,
-  Calendar,
-  Layers,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Tag,
-  Maximize2
+  Building2, MapPin, ChevronLeft, ChevronRight, SlidersHorizontal,
+  Layers, Calendar
 } from "lucide-react";
+
+const S = {
+  card: { background: 'rgba(22,27,39,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' },
+  label: { display: 'block', fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' },
+  select: { appearance: 'none', width: '100%', padding: '7px 32px 7px 10px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f2f8', fontSize: '12px', fontWeight: 500, outline: 'none', cursor: 'pointer', backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' },
+};
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
@@ -32,19 +28,16 @@ export default function ProjectsPage() {
     "all", "adyar", "anna nagar", "guindy", "omr", "perungudi",
     "porur", "t nagar", "tambaram", "thoraipakkam", "velachery"
   ];
-
   const statuses = ["all", "under construction", "ready to move", "new launch"];
 
   const loadData = async (currentOffset) => {
     setLoading(true);
     try {
       const data = await fetchProjects({
-        offset: currentOffset,
-        limit,
+        offset: currentOffset, limit,
         locality: locality !== "all" ? locality : undefined,
         project_status: status !== "all" ? status : undefined,
       });
-
       setProjects(data.results || []);
       setHasMore(data.has_more || false);
       setTotalReported(data.total || 0);
@@ -55,241 +48,177 @@ export default function ProjectsPage() {
     }
   };
 
-  useEffect(() => {
-    setOffset(0);
-    loadData(0);
-  }, [locality, status]);
+  useEffect(() => { setOffset(0); loadData(0); }, [locality, status]);
 
-  const handleNext = () => {
-    if (hasMore) {
-      const next = offset + limit;
-      setOffset(next);
-      loadData(next);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handlePrev = () => {
-    if (offset >= limit) {
-      const prev = offset - limit;
-      setOffset(prev);
-      loadData(prev);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  const handleNext = () => { if (hasMore) { const n = offset + limit; setOffset(n); loadData(n); window.scrollTo({ top: 0, behavior: "smooth" }); } };
+  const handlePrev = () => { if (offset >= limit) { const p = offset - limit; setOffset(p); loadData(p); window.scrollTo({ top: 0, behavior: "smooth" }); } };
 
   const convertPrice = (val) => {
     if (val === undefined || val === null) return "N/A";
-    if (val < 15) {
-      // In Crores
-      return `₹${val.toFixed(2)} Cr`;
-    } else if (val < 1000) {
-      // In Lakhs
-      return `₹${val.toFixed(1)} L`;
-    }
+    if (val < 15) return `₹${val.toFixed(2)} Cr`;
+    if (val < 1000) return `₹${val.toFixed(1)} L`;
     return `₹${(val / 100000).toFixed(1)} L`;
   };
 
+  const statusColors = {
+    'ready to move': { bg: 'rgba(45,212,191,0.1)', color: '#2dd4bf', border: 'rgba(45,212,191,0.25)' },
+    'under construction': { bg: 'rgba(251,191,36,0.08)', color: '#fbbf24', border: 'rgba(251,191,36,0.2)' },
+    'new launch': { bg: 'rgba(108,99,255,0.12)', color: '#9b95ff', border: 'rgba(108,99,255,0.3)' },
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-purple-900 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-purple-800/60 backdrop-blur-md text-purple-200 text-xs font-semibold mb-3">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Builder Developments · Unit-Corrected Prices</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Hero */}
+      <div style={{
+        position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '40px 36px',
+        background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(14,17,23,0) 60%)',
+        border: '1px solid rgba(168,85,247,0.15)',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at 70% 50%, rgba(168,85,247,0.06) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', marginBottom: '16px',
+            background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.25)',
+            fontSize: '11px', fontWeight: 700, color: '#c084fc', letterSpacing: '0.04em',
+          }}>
+            <Building2 style={{ width: 12, height: 12 }} />
+            <span>BUILDER DEVELOPMENTS · UNIT-CORRECTED PRICES</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Developer Projects in Chennai
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#f0f2f8', margin: 0, lineHeight: 1.1 }}>
+            Developer Projects
+            <br />
+            <span style={{ background: 'linear-gradient(90deg,#a855f7,#c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              in Chennai
+            </span>
           </h1>
-          <p className="text-purple-200 text-sm sm:text-base mt-2 leading-relaxed">
-            Major residential communities, high-rises, and gated townships across Chennai. Corrected from raw API floats into standardized Crores and Lakhs.
+          <p style={{ marginTop: '12px', fontSize: '14px', color: '#8892a4', lineHeight: 1.6, maxWidth: '480px' }}>
+            Major residential communities, high-rises, and gated townships. Prices auto-corrected from raw API floats into Crores and Lakhs.
           </p>
+        </div>
+        <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.04, pointerEvents: 'none' }}>
+          <Building2 style={{ width: 220, height: 220, color: '#fff' }} />
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Locality
-            </label>
-            <select
-              value={locality}
-              onChange={(e) => setLocality(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
-            >
-              {localities.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc === "all" ? "All Localities" : loc.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Project Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 capitalize"
-            >
-              {statuses.map((s) => (
-                <option key={s} value={s}>
-                  {s === "all" ? "All Statuses" : s}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div style={{ ...S.card, padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: '13px', fontWeight: 600, color: '#f0f2f8' }}>
+          <SlidersHorizontal style={{ width: 15, height: 15, color: '#a855f7' }} />
+          <span>Project Filters</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+          {[
+            { label: 'Locality', value: locality, onChange: e => setLocality(e.target.value),
+              options: localities.map(l => ({ value: l, label: l === 'all' ? 'All Localities' : l.toUpperCase() })) },
+            { label: 'Project Status', value: status, onChange: e => setStatus(e.target.value),
+              options: statuses.map(s => ({ value: s, label: s === 'all' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1) })) },
+          ].map(({ label, value, onChange, options }) => (
+            <div key={label}>
+              <label style={S.label}>{label}</label>
+              <select value={value} onChange={onChange} style={S.select}>
+                {options.map(o => <option key={o.value} value={o.value} style={{ background: '#1d2433' }}>{o.label}</option>)}
+              </select>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Pagination Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 px-1 gap-2">
-        <div>
-          Showing <span className="font-semibold text-slate-800">{projects.length}</span> projects
-          (Offset {offset} to {offset + projects.length} of {totalReported}+ in catalog)
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={handlePrev}
-            disabled={offset === 0 || loading}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Previous</span>
+      {/* Pagination */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#8892a4', padding: '0 4px' }}>
+        <span>Showing <strong style={{ color: '#f0f2f8' }}>{projects.length}</strong> projects · {offset}–{offset + projects.length} of {totalReported}+</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={handlePrev} disabled={offset === 0 || loading} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: offset === 0 || loading ? '#2a3349' : '#f0f2f8', fontSize: '12px', fontWeight: 500, cursor: offset === 0 || loading ? 'not-allowed' : 'pointer' }}>
+            <ChevronLeft style={{ width: 13, height: 13 }} /> Previous
           </button>
-          <span className="font-semibold text-slate-700 px-1">
-            Page {Math.floor(offset / limit) + 1}
-          </span>
-          <button
-            onClick={handleNext}
-            disabled={!hasMore || loading}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+          <span style={{ fontWeight: 600, color: '#f0f2f8', padding: '0 4px' }}>Pg {Math.floor(offset / limit) + 1}</span>
+          <button onClick={handleNext} disabled={!hasMore || loading} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: !hasMore || loading ? '#2a3349' : '#f0f2f8', fontSize: '12px', fontWeight: 500, cursor: !hasMore || loading ? 'not-allowed' : 'pointer' }}>
+            Next <ChevronRight style={{ width: 13, height: 13 }} />
           </button>
         </div>
       </div>
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, idx) => (
-            <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 animate-pulse">
-              <div className="h-6 bg-slate-100 rounded w-3/4" />
-              <div className="h-4 bg-slate-100 rounded w-1/2" />
-              <div className="h-10 bg-slate-100 rounded" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ ...S.card, padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="skeleton" style={{ height: 18, width: '70%' }} />
+              <div className="skeleton" style={{ height: 14, width: '45%' }} />
+              <div className="skeleton" style={{ height: 40, width: '100%' }} />
             </div>
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-800">No projects found</h3>
+        <div style={{ ...S.card, padding: '64px 24px', textAlign: 'center' }}>
+          <Building2 style={{ width: 48, height: 48, color: '#2a3349', margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#f0f2f8', margin: '0 0 6px' }}>No projects found</h3>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((p) => {
-            const rawAmenities = Array.isArray(p.amenities)
-              ? p.amenities
-              : typeof p.amenities === "string"
-              ? JSON.parse(p.amenities || "[]")
-              : [];
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {projects.map(p => {
+            const rawAmenities = Array.isArray(p.amenities) ? p.amenities : typeof p.amenities === "string" ? JSON.parse(p.amenities || "[]") : [];
+            const sc = statusColors[p.project_status] || { bg: 'rgba(255,255,255,0.04)', color: '#8892a4', border: 'rgba(255,255,255,0.08)' };
 
             return (
-              <div
-                key={p.project_id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
-              >
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-50 text-purple-800 border border-purple-200/50">
+              <div key={p.project_id} className="glass-hover" style={{ ...S.card, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '20px', flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '6px', background: 'rgba(168,85,247,0.1)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.2)' }}>
                       {p.developer_name}
                     </span>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">
+                    <span style={{ fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, textTransform: 'capitalize' }}>
                       {p.project_status}
                     </span>
                   </div>
 
-                  <h2 className="text-base font-bold text-slate-900 line-clamp-1">
+                  <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#f0f2f8', margin: '0 0 4px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {p.apartment_name}
                   </h2>
-                  <div className="flex items-center space-x-1 text-xs text-slate-500 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    <span className="capitalize font-semibold text-slate-700">{p.locality}</span>
-                    <span>•</span>
-                    <span className="text-slate-400">{p.total_units} Total Units</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8892a4' }}>
+                    <MapPin style={{ width: 12, height: 12 }} />
+                    <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{p.locality}</span>
+                    <span style={{ color: '#2a3349' }}>·</span>
+                    <span>{p.total_units} units</span>
                   </div>
 
-                  {/* Price Range */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <div>
-                      <span className="text-xs text-slate-500">Price Range</span>
-                      <div className="text-lg font-black text-slate-900">
+                      <div style={{ fontSize: '11px', color: '#8892a4', marginBottom: '2px' }}>Price Range</div>
+                      <div style={{ fontSize: '18px', fontWeight: 800, color: '#f0f2f8', letterSpacing: '-0.02em' }}>
                         {convertPrice(p.price_min)} – {convertPrice(p.price_max)}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs text-slate-500">Inventory</span>
-                      <div className="text-xs font-bold text-emerald-700">
-                        {p.total_listings} active listings
-                      </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '11px', color: '#8892a4' }}>Inventory</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#2dd4bf' }}>{p.total_listings} listings</div>
                     </div>
                   </div>
 
-                  {/* Area and Spec Strip */}
-                  <div className="grid grid-cols-3 gap-2 mt-3.5 p-2.5 rounded-xl bg-slate-50 text-xs text-slate-600 border border-slate-100 text-center">
-                    <div>
-                      <div className="text-[10px] text-slate-400">Unit Sizes</div>
-                      <div className="font-semibold text-slate-800">
-                        {p.min_area_sqft} – {p.max_area_sqft} sqft
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-slate-400">Towers</div>
-                      <div className="font-semibold text-slate-800">{p.total_towers} Towers</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-slate-400">Floors</div>
-                      <div className="font-semibold text-slate-800">Up to {p.total_floors} fl.</div>
-                    </div>
+                  <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', fontSize: '11px', color: '#8892a4', textAlign: 'center', gap: '4px' }}>
+                    <div><div style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>Area</div><div style={{ fontWeight: 600, color: '#f0f2f8', fontSize: '12px' }}>{p.min_area_sqft}–{p.max_area_sqft}</div></div>
+                    <div><div style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>Towers</div><div style={{ fontWeight: 600, color: '#f0f2f8', fontSize: '12px' }}>{p.total_towers}</div></div>
+                    <div><div style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>Floors</div><div style={{ fontWeight: 600, color: '#f0f2f8', fontSize: '12px' }}>Up to {p.total_floors}</div></div>
                   </div>
 
-                  {/* Amenities */}
                   {rawAmenities.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {rawAmenities.slice(0, 4).map((am) => (
-                        <span
-                          key={am}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 capitalize"
-                        >
+                    <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {rawAmenities.slice(0, 4).map(am => (
+                        <span key={am} style={{ fontSize: '10px', fontWeight: 500, padding: '3px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', color: '#8892a4', textTransform: 'capitalize', border: '1px solid rgba(255,255,255,0.06)' }}>
                           {am}
                         </span>
                       ))}
                       {rawAmenities.length > 4 && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-400">
+                        <span style={{ fontSize: '10px', fontWeight: 500, padding: '3px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', color: '#4a5568', border: '1px solid rgba(255,255,255,0.06)' }}>
                           +{rawAmenities.length - 4} more
                         </span>
                       )}
                     </div>
                   )}
-
-                  {/* RERA */}
-                  {p.rera_number && (
-                    <div className="mt-3 text-[11px] text-slate-400 truncate">
-                      <span className="font-semibold text-slate-500">RERA:</span> {p.rera_number}
-                    </div>
-                  )}
                 </div>
 
-                <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono text-[11px]">{p.project_id}</span>
-                  <span className="text-slate-500 text-[11px]">Possession: {p.possession_date || "TBD"}</span>
+                <div style={{ padding: '10px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#4a5568' }}>{p.project_id}</span>
+                  <span style={{ fontSize: '11px', color: '#8892a4' }}>Possession: {p.possession_date || "TBD"}</span>
                 </div>
               </div>
             );

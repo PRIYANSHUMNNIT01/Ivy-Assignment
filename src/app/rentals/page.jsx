@@ -3,19 +3,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { fetchRentals } from "../../services/api";
 import {
-  Key,
-  Filter,
-  Building,
-  BedDouble,
-  Bath,
-  Maximize2,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  ShieldAlert,
-  Sparkles,
-  DollarSign
+  Key, Building, BedDouble, Bath, Maximize2, MapPin,
+  ChevronLeft, ChevronRight, SlidersHorizontal
 } from "lucide-react";
+
+const S = {
+  card: { background: 'rgba(22,27,39,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' },
+  label: { display: 'block', fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' },
+  select: { appearance: 'none', width: '100%', padding: '7px 32px 7px 10px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f2f8', fontSize: '12px', fontWeight: 500, outline: 'none', cursor: 'pointer', backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' },
+  input: { width: '100%', padding: '7px 10px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f2f8', fontSize: '12px', fontWeight: 500, outline: 'none' },
+};
 
 export default function RentalsPage() {
   const [rentals, setRentals] = useState([]);
@@ -40,12 +37,10 @@ export default function RentalsPage() {
     setLoading(true);
     try {
       const data = await fetchRentals({
-        offset: currentOffset,
-        limit,
+        offset: currentOffset, limit,
         locality: locality !== "all" ? locality : undefined,
         bhk: bhk !== "all" ? bhk : undefined,
       });
-
       setRentals(data.results || []);
       setHasMore(data.has_more || false);
       setTotalReported(data.total || 0);
@@ -56,270 +51,189 @@ export default function RentalsPage() {
     }
   };
 
-  useEffect(() => {
-    setOffset(0);
-    loadData(0);
-  }, [locality, bhk]);
+  useEffect(() => { setOffset(0); loadData(0); }, [locality, bhk]);
 
-  const handleNext = () => {
-    if (hasMore) {
-      const next = offset + limit;
-      setOffset(next);
-      loadData(next);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handlePrev = () => {
-    if (offset >= limit) {
-      const prev = offset - limit;
-      setOffset(prev);
-      loadData(prev);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  const handleNext = () => { if (hasMore) { const n = offset + limit; setOffset(n); loadData(n); window.scrollTo({ top: 0, behavior: "smooth" }); } };
+  const handlePrev = () => { if (offset >= limit) { const p = offset - limit; setOffset(p); loadData(p); window.scrollTo({ top: 0, behavior: "smooth" }); } };
 
   const filteredRentals = useMemo(() => {
     let list = [...rentals];
-    if (furnishing !== "all") {
-      list = list.filter((r) => (r.furnishing || "").toLowerCase() === furnishing.toLowerCase());
-    }
-    if (maxRent) {
-      const max = parseFloat(maxRent);
-      if (!isNaN(max)) {
-        list = list.filter((r) => r.price <= max);
-      }
-    }
-    if (sortBy === "price_asc") {
-      list.sort((a, b) => a.price - b.price);
-    } else if (sortBy === "price_desc") {
-      list.sort((a, b) => b.price - a.price);
-    } else if (sortBy === "area_desc") {
-      list.sort((a, b) => b.carpet_area - a.carpet_area);
-    }
+    if (furnishing !== "all") list = list.filter(r => (r.furnishing || "").toLowerCase() === furnishing.toLowerCase());
+    if (maxRent) { const max = parseFloat(maxRent); if (!isNaN(max)) list = list.filter(r => r.price <= max); }
+    if (sortBy === "price_asc") list.sort((a, b) => a.price - b.price);
+    else if (sortBy === "price_desc") list.sort((a, b) => b.price - a.price);
+    else if (sortBy === "area_desc") list.sort((a, b) => b.carpet_area - a.carpet_area);
     return list;
   }, [rentals, furnishing, maxRent, sortBy]);
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-800/60 backdrop-blur-md text-blue-200 text-xs font-semibold mb-3">
-            <Key className="w-3.5 h-3.5" />
-            <span>Rental Homes & Apartments · Chennai Scoped</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Hero */}
+      <div style={{
+        position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '40px 36px',
+        background: 'linear-gradient(135deg, rgba(45,212,191,0.1) 0%, rgba(14,17,23,0) 60%)',
+        border: '1px solid rgba(45,212,191,0.15)',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at 70% 50%, rgba(45,212,191,0.06) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', marginBottom: '16px',
+            background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.2)',
+            fontSize: '11px', fontWeight: 700, color: '#2dd4bf', letterSpacing: '0.04em',
+          }}>
+            <Key style={{ width: 12, height: 12 }} />
+            <span>RENTAL HOMES & APARTMENTS · CHENNAI SCOPED</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Residential Rentals in Chennai
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#f0f2f8', margin: 0, lineHeight: 1.1 }}>
+            Residential Rentals
+            <br />
+            <span style={{ background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              in Chennai
+            </span>
           </h1>
-          <p className="text-blue-200 text-sm sm:text-base mt-2 leading-relaxed">
-            Browse verified rental properties with transparent monthly rents, deposit requirements, and maintenance fees. Assigned locality focus: <span className="text-white font-bold underline decoration-blue-400">Velachery</span>.
+          <p style={{ marginTop: '12px', fontSize: '14px', color: '#8892a4', lineHeight: 1.6, maxWidth: '480px' }}>
+            Verified rentals with transparent monthly rents, deposit requirements, and maintenance fees. Assigned locality focus:{" "}
+            <strong style={{ color: '#2dd4bf' }}>Velachery</strong>.
           </p>
+        </div>
+        <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.04, pointerEvents: 'none' }}>
+          <Building style={{ width: 220, height: 220, color: '#fff' }} />
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+      <div style={{ ...S.card, padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: '13px', fontWeight: 600, color: '#f0f2f8' }}>
+          <SlidersHorizontal style={{ width: 15, height: 15, color: '#2dd4bf' }} />
+          <span>Rental Filters</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+          {[
+            { label: 'Locality', value: locality, onChange: e => setLocality(e.target.value),
+              options: localities.map(l => ({ value: l, label: l === 'all' ? 'All Localities' : l.toUpperCase() + (l === 'velachery' ? ' ★' : '') })) },
+            { label: 'Bedrooms (BHK)', value: bhk, onChange: e => setBhk(e.target.value),
+              options: [{ value: 'all', label: 'All BHK' }, ...['1','2','3','4'].map(n => ({ value: n, label: `${n} BHK` }))] },
+            { label: 'Furnishing (Client)', value: furnishing, onChange: e => setFurnishing(e.target.value),
+              options: [{ value: 'all', label: 'All Furnishing' }, { value: 'unfurnished', label: 'Unfurnished' }, { value: 'semi-furnished', label: 'Semi-Furnished' }, { value: 'fully-furnished', label: 'Fully-Furnished' }] },
+            { label: 'Sort By', value: sortBy, onChange: e => setSortBy(e.target.value),
+              options: [{ value: 'default', label: 'Default' }, { value: 'price_asc', label: 'Rent: Low → High' }, { value: 'price_desc', label: 'Rent: High → Low' }, { value: 'area_desc', label: 'Largest Area' }] },
+          ].map(({ label, value, onChange, options }) => (
+            <div key={label}>
+              <label style={S.label}>{label}</label>
+              <select value={value} onChange={onChange} style={S.select}>
+                {options.map(o => <option key={o.value} value={o.value} style={{ background: '#1d2433' }}>{o.label}</option>)}
+              </select>
+            </div>
+          ))}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Locality
-            </label>
-            <select
-              value={locality}
-              onChange={(e) => setLocality(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            >
-              {localities.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc === "all" ? "All Localities" : loc.toUpperCase() + (loc === "velachery" ? " ★ (Assigned)" : "")}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Bedrooms (BHK)
-            </label>
-            <select
-              value={bhk}
-              onChange={(e) => setBhk(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            >
-              <option value="all">All BHK</option>
-              <option value="1">1 BHK</option>
-              <option value="2">2 BHK</option>
-              <option value="3">3 BHK</option>
-              <option value="4">4 BHK</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Furnishing <span className="text-blue-600 text-[10px]">(Client)</span>
-            </label>
-            <select
-              value={furnishing}
-              onChange={(e) => setFurnishing(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            >
-              <option value="all">All Furnishing</option>
-              <option value="unfurnished">Unfurnished</option>
-              <option value="semi-furnished">Semi-Furnished</option>
-              <option value="fully-furnished">Fully-Furnished</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Max Monthly Rent (₹)
-            </label>
-            <input
-              type="number"
-              placeholder="e.g. 35000"
-              value={maxRent}
-              onChange={(e) => setMaxRent(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Sort By
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full text-xs font-medium rounded-lg border border-slate-200 p-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            >
-              <option value="default">Default Order</option>
-              <option value="price_asc">Rent: Low to High</option>
-              <option value="price_desc">Rent: High to Low</option>
-              <option value="area_desc">Area: Largest</option>
-            </select>
+            <label style={S.label}>Max Monthly Rent (₹)</label>
+            <input type="number" placeholder="e.g. 35000" value={maxRent} onChange={e => setMaxRent(e.target.value)} style={S.input} />
           </div>
         </div>
       </div>
 
-      {/* Pagination Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 px-1 gap-2">
-        <div>
-          Showing <span className="font-semibold text-slate-800">{filteredRentals.length}</span> rentals
-          (Offset {offset} to {offset + rentals.length} of {totalReported}+ in catalog)
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={handlePrev}
-            disabled={offset === 0 || loading}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Previous</span>
-          </button>
-          <span className="font-semibold text-slate-700 px-1">
-            Page {Math.floor(offset / limit) + 1}
-          </span>
-          <button
-            onClick={handleNext}
-            disabled={!hasMore || loading}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-medium hover:bg-slate-50 disabled:opacity-40"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+      {/* Pagination */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#8892a4', padding: '0 4px' }}>
+        <span>Showing <strong style={{ color: '#f0f2f8' }}>{filteredRentals.length}</strong> rentals · {offset}–{offset + rentals.length} of {totalReported}+</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {[{ label: 'Previous', onClick: handlePrev, disabled: offset === 0 || loading, icon: ChevronLeft, side: 'left' },
+            { label: 'Next', onClick: handleNext, disabled: !hasMore || loading, icon: ChevronRight, side: 'right' }].map(({ label, onClick, disabled, icon: Icon, side }) => (
+            <button key={label} onClick={onClick} disabled={disabled} style={{
+              display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
+              color: disabled ? '#2a3349' : '#f0f2f8', fontSize: '12px', fontWeight: 500, cursor: disabled ? 'not-allowed' : 'pointer',
+            }}>
+              {side === 'left' && <Icon style={{ width: 13, height: 13 }} />}
+              {label}
+              {side === 'right' && <Icon style={{ width: 13, height: 13 }} />}
+            </button>
+          ))}
+          <span style={{ fontWeight: 600, color: '#f0f2f8', padding: '0 4px' }}>Pg {Math.floor(offset / limit) + 1}</span>
         </div>
       </div>
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, idx) => (
-            <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 animate-pulse">
-              <div className="h-6 bg-slate-100 rounded w-3/4" />
-              <div className="h-4 bg-slate-100 rounded w-1/2" />
-              <div className="h-10 bg-slate-100 rounded" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ ...S.card, padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="skeleton" style={{ height: 18, width: '70%' }} />
+              <div className="skeleton" style={{ height: 14, width: '45%' }} />
+              <div className="skeleton" style={{ height: 40, width: '100%' }} />
             </div>
           ))}
         </div>
       ) : filteredRentals.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <Key className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-800">No rentals found</h3>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your filters</p>
+        <div style={{ ...S.card, padding: '64px 24px', textAlign: 'center' }}>
+          <Key style={{ width: 48, height: 48, color: '#2a3349', margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#f0f2f8', margin: '0 0 6px' }}>No rentals found</h3>
+          <p style={{ fontSize: '13px', color: '#8892a4', margin: 0 }}>Try adjusting your filters</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRentals.map((r) => (
-            <div
-              key={r.listing_id}
-              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
-            >
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/50">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {filteredRentals.map(r => (
+            <div key={r.listing_id} className="glass-hover" style={{ ...S.card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '3px 8px', borderRadius: '6px', background: 'rgba(45,212,191,0.1)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.2)' }}>
                     {r.bedroom} BHK {r.property_type}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">
+                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '3px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', color: '#8892a4', textTransform: 'capitalize' }}>
                     {r.furnishing}
                   </span>
                 </div>
 
-                <h2 className="text-base font-bold text-slate-900 line-clamp-1">
+                <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#f0f2f8', margin: '0 0 4px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {r.apartment_name}
                 </h2>
-                <div className="flex items-center space-x-1 text-xs text-slate-500 mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span className="capitalize font-semibold text-slate-700">{r.locality}</span>
-                  <span>•</span>
-                  <span className="text-slate-400">Portal: {r.website}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8892a4' }}>
+                  <MapPin style={{ width: 12, height: 12 }} />
+                  <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{r.locality}</span>
+                  <span style={{ color: '#2a3349' }}>·</span>
+                  <span style={{ color: '#4a5568' }}>{r.website}</span>
                 </div>
 
-                {/* Price and Deposit */}
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+                <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                   <div>
-                    <div className="text-xl font-black text-slate-900">
-                      ₹{r.price.toLocaleString("en-IN")}{" "}
-                      <span className="text-xs font-normal text-slate-500">/ month</span>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#f0f2f8', letterSpacing: '-0.02em' }}>
+                      ₹{r.price.toLocaleString("en-IN")}
+                      <span style={{ fontSize: '12px', fontWeight: 400, color: '#8892a4', marginLeft: '4px' }}>/month</span>
                     </div>
                     {r.maintenance > 0 && (
-                      <div className="text-[11px] text-slate-500">
+                      <div style={{ fontSize: '11px', color: '#8892a4', marginTop: '2px' }}>
                         + ₹{r.maintenance.toLocaleString("en-IN")} maintenance
                       </div>
                     )}
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs text-slate-500">Deposit</span>
-                    <div className="text-xs font-bold text-slate-800">
-                      ₹{(r.deposit || 0).toLocaleString("en-IN")}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '10px', color: '#8892a4', marginBottom: '2px' }}>Deposit</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#f0f2f8' }}>₹{(r.deposit || 0).toLocaleString("en-IN")}</div>
+                  </div>
+                </div>
+
+                <div style={{
+                  marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+                  padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.05)', fontSize: '12px', color: '#8892a4', gap: '4px',
+                }}>
+                  {[[BedDouble, `${r.bedroom} Beds`], [Bath, `${r.bathroom} Baths`], [Maximize2, `${r.carpet_area} sqft`]].map(([Icon, text]) => (
+                    <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Icon style={{ width: 12, height: 12, color: '#4a5568' }} />
+                      <span>{text}</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Specs */}
-                <div className="grid grid-cols-3 gap-2 mt-4 p-2.5 rounded-xl bg-slate-50 text-xs text-slate-600 border border-slate-100">
-                  <div className="flex items-center space-x-1">
-                    <BedDouble className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{r.bedroom} Beds</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Bath className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{r.bathroom} Baths</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Maximize2 className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{r.carpet_area} sqft</span>
-                  </div>
-                </div>
-
-                <p className="mt-3 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                  {r.description || "No description provided."}
-                </p>
+                {r.description && (
+                  <p style={{ marginTop: '12px', fontSize: '12px', color: '#8892a4', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {r.description}
+                  </p>
+                )}
               </div>
 
-              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-mono text-[11px]">{r.listing_id}</span>
-                <span className="font-semibold text-slate-700">Contact: {r.posted_by_contact}</span>
+              <div style={{ padding: '10px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#4a5568' }}>{r.listing_id}</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: '#8892a4' }}>{r.posted_by_contact}</span>
               </div>
             </div>
           ))}

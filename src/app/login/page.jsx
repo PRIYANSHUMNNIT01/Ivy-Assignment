@@ -3,7 +3,20 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import { Lock, Mail, KeyRound, ShieldAlert, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, KeyRound, ShieldAlert, ArrowRight, CheckCircle2, Zap } from "lucide-react";
+
+const S = {
+  input: {
+    width: '100%',
+    padding: '11px 14px 11px 42px',
+    borderRadius: '10px',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    color: '#f0f2f8',
+    fontSize: '14px',
+    outline: 'none',
+  },
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,16 +28,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const demoUsers = [
-    { email: "demo1@ivy.homes", label: "Demo User 1 (Primary)" },
-    { email: "demo2@ivy.homes", label: "Demo User 2" },
-    { email: "demo3@ivy.homes", label: "Demo User 3" },
+    { email: "demo1@ivy.homes", label: "Demo User 1", sub: "Primary · Senior Analyst" },
+    { email: "demo2@ivy.homes", label: "Demo User 2", sub: "Portfolio Lead" },
+    { email: "demo3@ivy.homes", label: "Demo User 3", sub: "Acquisitions Director" },
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       await login(email, password);
       router.push("/");
@@ -36,108 +48,134 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4">
-      <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-3">
-            <Lock className="w-6 h-6" />
+    <div style={{ maxWidth: '440px', margin: '40px auto', padding: '0 16px' }}>
+      <div style={{
+        background: 'rgba(22,27,39,0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '20px',
+        padding: '36px',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '14px', margin: '0 auto 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(135deg, rgba(108,99,255,0.2), rgba(108,99,255,0.08))',
+            border: '1px solid rgba(108,99,255,0.3)',
+          }}>
+            <Lock style={{ width: 22, height: 22, color: '#6c63ff' }} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Ivy Homes Authentication</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#f0f2f8', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            Sign in to Ivy Homes
+          </h1>
+          <p style={{ fontSize: '13px', color: '#8892a4', margin: 0, lineHeight: 1.5 }}>
             Access live Chennai property endpoints with automatic 15-minute session renewal
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 flex items-start space-x-2">
-            <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div style={{
+            marginBottom: '20px', padding: '12px 14px', borderRadius: '10px',
+            background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.25)',
+            display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: '#fb7185',
+          }}>
+            <ShieldAlert style={{ width: 16, height: 16, flexShrink: 0, marginTop: '1px' }} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
               Email Address
             </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <div style={{ position: 'relative' }}>
+              <Mail style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#4a5568' }} />
               <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-sm"
+                type="email" required value={email}
+                onChange={e => setEmail(e.target.value)}
+                style={S.input}
                 placeholder="demo1@ivy.homes"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
               Password
             </label>
-            <div className="relative">
-              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <div style={{ position: 'relative' }}>
+              <KeyRound style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#4a5568' }} />
               <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-sm"
+                type="password" required value={password}
+                onChange={e => setPassword(e.target.value)}
+                style={S.input}
               />
             </div>
           </div>
 
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
+            type="submit" disabled={loading}
+            style={{
+              width: '100%', padding: '13px', borderRadius: '10px',
+              background: loading ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6c63ff, #4b43cc)',
+              color: '#fff', fontSize: '14px', fontWeight: 700, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              boxShadow: loading ? 'none' : '0 0 24px rgba(108,99,255,0.35)',
+              transition: 'all 0.15s',
+            }}
           >
-            {loading ? (
-              <span>Authenticating...</span>
-            ) : (
+            {loading ? <span>Authenticating...</span> : (
               <>
                 <span>Sign In to Ivy Homes</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight style={{ width: 16, height: 16 }} />
               </>
             )}
           </button>
         </form>
 
-        {/* Quick Fill Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Quick Fill Demo Accounts
+        {/* Quick Fill Demo */}
+        <div style={{ marginTop: '28px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: '#4a5568', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+            Quick Fill — Demo Accounts
           </div>
-          <div className="space-y-2">
-            {demoUsers.map((d) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {demoUsers.map(d => (
               <button
-                key={d.email}
-                type="button"
-                onClick={() => {
-                  setEmail(d.email);
-                  setPassword("cfd53b6dd0");
+                key={d.email} type="button"
+                onClick={() => { setEmail(d.email); setPassword("cfd53b6dd0"); }}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '10px 14px', borderRadius: '10px',
+                  background: email === d.email ? 'rgba(108,99,255,0.1)' : 'rgba(255,255,255,0.02)',
+                  border: email === d.email ? '1px solid rgba(108,99,255,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  transition: 'all 0.15s',
                 }}
-                className={`w-full text-left p-2.5 rounded-lg border text-xs font-medium flex items-center justify-between transition-all ${
-                  email === d.email
-                    ? "border-emerald-500 bg-emerald-50/50 text-emerald-900"
-                    : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                }`}
               >
                 <div>
-                  <div className="font-semibold">{d.label}</div>
-                  <div className="text-slate-500">{d.email}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: email === d.email ? '#9b95ff' : '#f0f2f8' }}>{d.label}</div>
+                  <div style={{ fontSize: '11px', color: '#8892a4', marginTop: '1px' }}>{d.email} · {d.sub}</div>
                 </div>
-                {email === d.email && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {email === d.email && <CheckCircle2 style={{ width: 16, height: 16, color: '#6c63ff' }} />}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Auth Insight Callout */}
-        <div className="mt-6 p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 leading-relaxed">
-          <span className="font-bold">Auth Audit Discovery:</span> The documentation claims tokens last 24 hours without a refresh flow. The real API returns <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">expires_in: 900</code> (15 mins) and a <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">refresh_token</code>. Our app seamlessly handles automatic token rotation via <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">/auth/refresh</code> so sessions survive indefinitely.
+        {/* Auth Discovery Callout */}
+        <div style={{
+          marginTop: '20px', padding: '14px', borderRadius: '10px',
+          background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)',
+          fontSize: '12px', color: '#8892a4', lineHeight: 1.5,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: 700, color: '#fbbf24' }}>
+            <Zap style={{ width: 13, height: 13 }} />
+            <span>Auth Audit Discovery</span>
+          </div>
+          Docs claim tokens last 24h with no refresh flow. The real API returns <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: '4px', color: '#fbbf24', fontFamily: 'monospace' }}>expires_in: 900</code> (15 min) plus a <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: '4px', color: '#fbbf24', fontFamily: 'monospace' }}>refresh_token</code>. Our app handles rotation automatically via <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: '4px', color: '#fbbf24', fontFamily: 'monospace' }}>/auth/refresh</code>.
         </div>
       </div>
     </div>

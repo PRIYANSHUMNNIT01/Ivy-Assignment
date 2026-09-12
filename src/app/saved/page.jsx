@@ -4,17 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { fetchSavedListings, removeSavedListing } from "../../services/api";
-import {
-  Bookmark,
-  Building,
-  BedDouble,
-  Bath,
-  Maximize2,
-  MapPin,
-  Trash2,
-  LogIn,
-  ArrowRight
-} from "lucide-react";
+import { Bookmark, Building, BedDouble, Bath, Maximize2, MapPin, Trash2, LogIn, ArrowRight, Heart } from "lucide-react";
+
+const S = {
+  card: { background: 'rgba(22,27,39,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' },
+};
 
 export default function SavedPage() {
   const { user, toggleSave } = useAuth();
@@ -22,10 +16,7 @@ export default function SavedPage() {
   const [loading, setLoading] = useState(true);
 
   const loadSaved = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const data = await fetchSavedListings();
@@ -37,30 +28,32 @@ export default function SavedPage() {
     }
   };
 
-  useEffect(() => {
-    loadSaved();
-  }, [user]);
+  useEffect(() => { loadSaved(); }, [user]);
 
   const handleRemove = async (listingId) => {
     await toggleSave(listingId);
-    setSavedItems((prev) => prev.filter((item) => item.listing_id !== listingId));
+    setSavedItems(prev => prev.filter(item => item.listing_id !== listingId));
   };
 
   if (!user) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-          <Bookmark className="w-7 h-7" />
+      <div style={{ maxWidth: '400px', margin: '80px auto', textAlign: 'center', padding: '0 16px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '18px', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <Bookmark style={{ width: 28, height: 28, color: '#4a5568' }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">Sign in to view your Saved Properties</h2>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Saved listings are synced directly to your account using the <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">/v1/saved</code> endpoint and persist across browser reloads.
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#f0f2f8', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+          Sign in to View Saved Properties
+        </h2>
+        <p style={{ fontSize: '13px', color: '#8892a4', lineHeight: 1.6, margin: '0 0 24px' }}>
+          Saved listings are synced directly to your account using the{' '}
+          <code style={{ fontFamily: 'monospace', fontSize: '12px', padding: '2px 6px', borderRadius: '5px', background: 'rgba(108,99,255,0.12)', color: '#9b95ff' }}>/v1/saved</code> endpoint and persist across reloads.
         </p>
-        <Link
-          href="/login"
-          className="inline-flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all"
-        >
-          <LogIn className="w-4 h-4" />
+        <Link href="/login" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '11px 24px',
+          background: 'linear-gradient(135deg, #6c63ff, #4b43cc)', color: '#fff', fontSize: '14px', fontWeight: 700,
+          borderRadius: '10px', textDecoration: 'none', boxShadow: '0 0 20px rgba(108,99,255,0.3)',
+        }}>
+          <LogIn style={{ width: 16, height: 16 }} />
           <span>Go to Login</span>
         </Link>
       </div>
@@ -68,91 +61,91 @@ export default function SavedPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Saved Properties</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Synchronized with <code className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">GET /v1/saved</code> for user {user.email}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.2)' }}>
+              <Heart style={{ width: 18, height: 18, color: '#fb7185', fill: '#fb7185' }} />
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#f0f2f8', margin: 0, letterSpacing: '-0.02em' }}>
+              Saved Properties
+            </h1>
+          </div>
+          <p style={{ fontSize: '12px', color: '#8892a4', margin: 0 }}>
+            Synced with <code style={{ fontFamily: 'monospace', fontSize: '11px', padding: '2px 6px', borderRadius: '5px', background: 'rgba(45,212,191,0.1)', color: '#2dd4bf' }}>GET /v1/saved</code> for {user.email}
           </p>
         </div>
-        <div className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+        <div style={{ padding: '8px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '13px', fontWeight: 600, color: '#f0f2f8', whiteSpace: 'nowrap' }}>
           {savedItems.length} {savedItems.length === 1 ? "Listing" : "Listings"} Saved
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, idx) => (
-            <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 animate-pulse">
-              <div className="h-6 bg-slate-100 rounded w-3/4" />
-              <div className="h-4 bg-slate-100 rounded w-1/2" />
-              <div className="h-10 bg-slate-100 rounded" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} style={{ ...S.card, padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="skeleton" style={{ height: 18, width: '70%' }} />
+              <div className="skeleton" style={{ height: 14, width: '45%' }} />
+              <div className="skeleton" style={{ height: 40 }} />
             </div>
           ))}
         </div>
       ) : savedItems.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <Bookmark className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-800">No saved properties yet</h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Browse listings and click the bookmark icon to save properties to your account.
+        <div style={{ ...S.card, padding: '64px 24px', textAlign: 'center' }}>
+          <Bookmark style={{ width: 48, height: 48, color: '#2a3349', margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#f0f2f8', margin: '0 0 6px' }}>No saved properties yet</h3>
+          <p style={{ fontSize: '13px', color: '#8892a4', margin: '0 0 20px' }}>
+            Browse listings and click the bookmark icon to save properties.
           </p>
-          <Link
-            href="/"
-            className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 mt-4"
-          >
-            <span>Browse Listings Catalog</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#6c63ff', textDecoration: 'none' }}>
+            Browse Listings Catalog <ArrowRight style={{ width: 14, height: 14 }} />
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {savedItems.map((l) => (
-            <div
-              key={l.listing_id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden"
-            >
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {savedItems.map(l => (
+            <div key={l.listing_id} className="glass-hover" style={{ ...S.card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '3px 8px', borderRadius: '6px', background: 'rgba(251,113,133,0.08)', color: '#fb7185', border: '1px solid rgba(251,113,133,0.2)' }}>
                     {l.property_type}
                   </span>
                   <button
                     onClick={() => handleRemove(l.listing_id)}
-                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Remove from Saved"
+                    style={{ padding: '6px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.15s', color: '#4a5568' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#fb7185'; e.currentTarget.style.background = 'rgba(251,113,133,0.08)'; e.currentTarget.style.borderColor = 'rgba(251,113,133,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#4a5568'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'transparent'; }}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 style={{ width: 14, height: 14 }} />
                   </button>
                 </div>
 
                 <Link href={`/listings/${l.listing_id}`}>
-                  <h2 className="text-base font-bold text-slate-900 hover:text-emerald-700 transition-colors line-clamp-1">
+                  <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#f0f2f8', margin: '0 0 4px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', cursor: 'pointer' }}>
                     {l.apartment_name}
                   </h2>
                 </Link>
-                <div className="flex items-center space-x-1 text-xs text-slate-500 mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span className="capitalize font-semibold text-slate-700">{l.locality}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8892a4' }}>
+                  <MapPin style={{ width: 12, height: 12 }} />
+                  <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{l.locality}</span>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-baseline justify-between">
-                  <div className="text-lg font-black text-slate-900">
+                <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#f0f2f8', letterSpacing: '-0.02em' }}>
                     ₹{l.price ? l.price.toLocaleString("en-IN") : "N/A"}
                   </div>
-                  <div className="text-xs font-semibold text-slate-600">
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#8892a4' }}>
                     {l.bedroom} BHK · {l.carpet_area} sqft
                   </div>
                 </div>
               </div>
 
-              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-mono text-[11px]">{l.listing_id}</span>
-                <Link
-                  href={`/listings/${l.listing_id}`}
-                  className="font-semibold text-emerald-700 hover:text-emerald-800"
-                >
+              <div style={{ padding: '10px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#4a5568' }}>{l.listing_id}</span>
+                <Link href={`/listings/${l.listing_id}`} style={{ fontSize: '12px', fontWeight: 600, color: '#6c63ff', textDecoration: 'none' }}>
                   View Details →
                 </Link>
               </div>
