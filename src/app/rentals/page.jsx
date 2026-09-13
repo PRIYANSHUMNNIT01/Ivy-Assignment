@@ -239,6 +239,56 @@ export default function RentalsPage() {
           ))}
         </div>
       )}
+
+      {/* Bottom Page Navigation Bar */}
+      {!loading && filteredRentals.length > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderRadius: '16px',
+          background: 'rgba(22,27,39,0.7)', backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.06)', marginTop: '8px',
+          fontSize: '13px', color: '#8892a4', flexWrap: 'wrap', gap: '12px'
+        }}>
+          <span>
+            Showing <strong style={{ color: '#f0f2f8' }}>{filteredRentals.length}</strong> rentals · Page <strong style={{ color: '#f0f2f8' }}>{Math.floor(offset / limit) + 1}</strong>
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={handlePrev}
+              disabled={offset === 0 || loading}
+              className="glass-hover"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)',
+                background: offset === 0 || loading ? 'rgba(255,255,255,0.02)' : 'rgba(45,212,191,0.12)',
+                color: offset === 0 || loading ? '#4a5568' : '#2dd4bf',
+                fontSize: '13px', fontWeight: 600,
+                cursor: offset === 0 || loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <ChevronLeft style={{ width: 15, height: 15 }} /> Previous Page
+            </button>
+            <span style={{ fontWeight: 700, color: '#f0f2f8', padding: '0 8px' }}>
+              Page {Math.floor(offset / limit) + 1}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={!hasMore || loading}
+              className="glass-hover"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)',
+                background: !hasMore || loading ? 'rgba(255,255,255,0.02)' : 'rgba(45,212,191,0.12)',
+                color: !hasMore || loading ? '#4a5568' : '#2dd4bf',
+                fontSize: '13px', fontWeight: 600,
+                cursor: !hasMore || loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Next Page <ChevronRight style={{ width: 15, height: 15 }} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
