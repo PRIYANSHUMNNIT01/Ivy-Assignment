@@ -4,27 +4,26 @@ import { AuthProvider } from "../context/AuthContext";
 
 export const metadata = {
   title: "Ivy Homes — Chennai Property Intelligence & Data Audit",
-  description: "High-performance property exploration, rentals, builder projects, and comprehensive API documentation integrity audit for Chennai.",
+  description: "Browse Chennai properties, rentals, and builder projects.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen flex flex-col" style={{ background: '#0e1117', color: '#f0f2f8' }}>
+      <body style={{ background: '#fafaf8', color: '#1c1917', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <AuthProvider>
           <Navbar />
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <main style={{ flex: 1, maxWidth: 1200, width: '100%', margin: '0 auto', padding: '32px 20px' }}>
             {children}
           </main>
-          <footer className="mt-16 border-t py-8 text-center text-xs" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#161b27', color: '#4a5568' }}>
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div style={{ color: '#4a5568' }}>
-                © September 2026 Ivy Homes Engineering Assessment · Chennai Scoped Dataset
+          <footer style={{ borderTop: '1px solid #e8e3dc', background: '#fff', padding: '28px 20px', marginTop: '48px' }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 13, color: '#78716c' }}>
+                © 2026 Ivy Homes · Chennai Dataset · Assessment Submission
               </div>
-              <div className="flex items-center gap-4" style={{ color: '#4a5568' }}>
-                <span>API: <code className="font-mono px-1.5 py-0.5 rounded text-xs" style={{ background: 'rgba(108,99,255,0.12)', color: '#9b95ff' }}>solve.ivy.homes</code></span>
-                <span style={{ color: '#2a3349' }}>•</span>
-                <span>Ref: <code className="font-mono px-1.5 py-0.5 rounded text-xs" style={{ background: 'rgba(108,99,255,0.12)', color: '#9b95ff' }}>2026-09-10T00:00:00+05:30</code></span>
+              <div style={{ display: 'flex', gap: '20px', fontSize: 13, color: '#a8a29e' }}>
+                <span>API: <code style={{ fontFamily: 'monospace', color: '#78716c' }}>solve.ivy.homes</code></span>
+                <span>Ref: <code style={{ fontFamily: 'monospace', color: '#78716c' }}>2026-09-10T00:00:00+05:30</code></span>
               </div>
             </div>
           </footer>

@@ -5,407 +5,243 @@ import Link from "next/link";
 import { fetchListings } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import {
-  Search, Filter, Bookmark, Building, BedDouble, Bath,
-  Maximize2, MapPin, ChevronLeft, ChevronRight,
-  ShieldAlert, AlertTriangle, ArrowUpDown, Sparkles, SlidersHorizontal
+  Bookmark, Building, BedDouble, Bath, Maximize2,
+  MapPin, ChevronLeft, ChevronRight, ShieldAlert, AlertTriangle, SlidersHorizontal
 } from "lucide-react";
 
 const CORRUPT_IDS = new Set([
-  '100-4000397', '100-4000449', '100-4000457', '100-4000491', '100-4000738', '100-4001530', '100-4001703',
-  '100-4002832', '100-4002961', 'DWE-4000236', 'DWE-4000412', 'DWE-4000824', 'DWE-4000891', 'DWE-4001368',
-  'DWE-4001424', 'DWE-4001442', 'DWE-4002045', 'DWE-4002247', 'DWE-4002374', 'DWE-4002712', 'DWE-4002806',
-  'DWE-4003067', 'MAG-4000145', 'MAG-4000283', 'MAG-4000883', 'MAG-4001981', 'MAG-4002491', 'MAG-4002776',
-  'MAG-4003100', 'SQU-4000224', 'SQU-4000308', 'SQU-4000459', 'SQU-4000583', 'SQU-4001225', 'SQU-4001601',
-  'SQU-4002483', 'ZER-4000021', 'ZER-4000995', 'ZER-4001161', 'ZER-4001287', 'ZER-4001669', 'ZER-4001686',
-  'ZER-4001726', 'ZER-4001844', 'ZER-4002352'
+  '100-4000397','100-4000449','100-4000457','100-4000491','100-4000738','100-4001530','100-4001703',
+  '100-4002832','100-4002961','DWE-4000236','DWE-4000412','DWE-4000824','DWE-4000891','DWE-4001368',
+  'DWE-4001424','DWE-4001442','DWE-4002045','DWE-4002247','DWE-4002374','DWE-4002712','DWE-4002806',
+  'DWE-4003067','MAG-4000145','MAG-4000283','MAG-4000883','MAG-4001981','MAG-4002491','MAG-4002776',
+  'MAG-4003100','SQU-4000224','SQU-4000308','SQU-4000459','SQU-4000583','SQU-4001225','SQU-4001601',
+  'SQU-4002483','ZER-4000021','ZER-4000995','ZER-4001161','ZER-4001287','ZER-4001669','ZER-4001686',
+  'ZER-4001726','ZER-4001844','ZER-4002352'
 ]);
 
 const FAKE_IDS = new Set([
-  '100-4001484', '100-4001961', 'DWE-4000745', 'MAG-4000075', 'MAG-4000870',
-  'MAG-4001467', 'MAG-4002092', 'SQU-4001342', 'ZER-4002683'
+  '100-4001484','100-4001961','DWE-4000745','MAG-4000075','MAG-4000870',
+  'MAG-4001467','MAG-4002092','SQU-4001342','ZER-4002683'
 ]);
 
-const S = {
-  card: {
-    background: 'rgba(22,27,39,0.7)',
-    backdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '16px',
-  },
-  input: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    color: '#f0f2f8',
-    borderRadius: '10px',
-    fontSize: '12px',
-    fontWeight: 500,
-    padding: '7px 10px',
-    width: '100%',
-    outline: 'none',
-  },
-  label: {
-    display: 'block',
-    fontSize: '10px',
-    fontWeight: 700,
-    color: '#8892a4',
-    textTransform: 'uppercase',
-    letterSpacing: '0.08em',
-    marginBottom: '5px',
-  },
+const inp = {
+  padding: '7px 10px', borderRadius: 8, border: '1px solid #e8e3dc',
+  background: '#fff', fontSize: 13, color: '#1c1917', outline: 'none', width: '100%',
 };
 
 export default function ListingsPage() {
   const { isSaved, toggleSave } = useAuth();
+  const [listings, setListings]     = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [offset, setOffset]         = useState(0);
+  const [limit]                     = useState(50);
+  const [hasMore, setHasMore]       = useState(false);
+  const [totalReported, setTotal]   = useState(0);
 
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [limit] = useState(50);
-  const [hasMore, setHasMore] = useState(false);
-  const [totalReported, setTotalReported] = useState(0);
-
-  const [locality, setLocality] = useState("all");
-  const [bhk, setBhk] = useState("all");
-  const [propertyType, setPropertyType] = useState("all");
+  const [locality, setLocality]     = useState("all");
+  const [bhk, setBhk]               = useState("all");
+  const [propertyType, setPropType] = useState("all");
   const [furnishing, setFurnishing] = useState("all");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [sortBy, setSortBy] = useState("default");
-  const [hideCorrupt, setHideCorrupt] = useState(false);
+  const [maxPrice, setMaxPrice]     = useState("");
+  const [sortBy, setSortBy]         = useState("default");
+  const [hideCorrupt, setHideBad]   = useState(false);
 
-  const localities = [
-    "all", "adyar", "anna nagar", "guindy", "omr", "perungudi",
-    "porur", "t nagar", "tambaram", "thoraipakkam", "velachery"
-  ];
+  const localities = ["all","adyar","anna nagar","guindy","omr","perungudi","porur","t nagar","tambaram","thoraipakkam","velachery"];
+  const propTypes  = ["all","apartment","villa","independent house","builder floor","plot"];
 
-  const propertyTypes = ["all", "apartment", "villa", "independent house", "builder floor", "plot"];
-  const furnishingTypes = ["all", "unfurnished", "semi-furnished", "fully-furnished"];
-
-  const loadData = async (currentOffset) => {
+  const loadData = async (off) => {
     setLoading(true);
     try {
-      const data = await fetchListings({
-        offset: currentOffset, limit,
-        locality: locality !== "all" ? locality : undefined,
-        bhk: bhk !== "all" ? bhk : undefined,
-        property_type: propertyType !== "all" ? propertyType : undefined,
-      });
+      const data = await fetchListings({ offset: off, limit, locality: locality !== "all" ? locality : undefined, bhk: bhk !== "all" ? bhk : undefined, property_type: propertyType !== "all" ? propertyType : undefined });
       setListings(data.results || []);
       setHasMore(data.has_more || false);
-      setTotalReported(data.total || 0);
-    } catch (err) {
-      console.error("Failed to load listings:", err);
-    } finally {
-      setLoading(false);
-    }
+      setTotal(data.total || 0);
+    } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
   useEffect(() => { setOffset(0); loadData(0); }, [locality, bhk, propertyType]);
 
-  const handleNextPage = () => {
-    if (hasMore) { const n = offset + limit; setOffset(n); loadData(n); window.scrollTo({ top: 0, behavior: "smooth" }); }
-  };
-  const handlePrevPage = () => {
-    if (offset >= limit) { const p = offset - limit; setOffset(p); loadData(p); window.scrollTo({ top: 0, behavior: "smooth" }); }
-  };
+  const nextPage = () => { if (hasMore) { const n=offset+limit; setOffset(n); loadData(n); window.scrollTo({top:0,behavior:'smooth'}); }};
+  const prevPage = () => { if (offset>=limit) { const p=offset-limit; setOffset(p); loadData(p); window.scrollTo({top:0,behavior:'smooth'}); }};
 
-  const filteredListings = useMemo(() => {
-    let result = [...listings];
-    if (furnishing !== "all") result = result.filter(l => (l.furnishing || "").toLowerCase() === furnishing.toLowerCase());
-    if (minPrice) { const min = parseFloat(minPrice); if (!isNaN(min)) result = result.filter(l => l.price >= min); }
-    if (maxPrice) { const max = parseFloat(maxPrice); if (!isNaN(max)) result = result.filter(l => l.price <= max); }
-    if (hideCorrupt) result = result.filter(l => !CORRUPT_IDS.has(l.listing_id) && !FAKE_IDS.has(l.listing_id));
-    if (sortBy === "price_asc") result.sort((a, b) => a.price - b.price);
-    else if (sortBy === "price_desc") result.sort((a, b) => b.price - a.price);
-    else if (sortBy === "area_desc") result.sort((a, b) => b.carpet_area - a.carpet_area);
-    else if (sortBy === "newest") result.sort((a, b) => (b.posted_at || "").localeCompare(a.posted_at || ""));
-    return result;
-  }, [listings, furnishing, minPrice, maxPrice, hideCorrupt, sortBy]);
+  const filtered = useMemo(() => {
+    let r = [...listings];
+    if (furnishing !== "all") r = r.filter(l => (l.furnishing||"").toLowerCase() === furnishing.toLowerCase());
+    if (maxPrice) { const m=parseFloat(maxPrice); if(!isNaN(m)) r=r.filter(l=>l.price<=m); }
+    if (hideCorrupt) r = r.filter(l => !CORRUPT_IDS.has(l.listing_id) && !FAKE_IDS.has(l.listing_id));
+    if (sortBy === "price_asc") r.sort((a,b)=>a.price-b.price);
+    else if (sortBy === "price_desc") r.sort((a,b)=>b.price-a.price);
+    else if (sortBy === "area_desc") r.sort((a,b)=>b.carpet_area-a.carpet_area);
+    else if (sortBy === "newest") r.sort((a,b)=>(b.posted_at||"").localeCompare(a.posted_at||""));
+    return r;
+  }, [listings, furnishing, maxPrice, hideCorrupt, sortBy]);
 
-  const formatPrice = (price) => {
-    if (price === undefined || price === null) return "N/A";
-    if (price < 0) return `-₹${Math.abs(price).toLocaleString("en-IN")}`;
-    if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
-    if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
-    return `₹${price.toLocaleString("en-IN")}`;
+  const fmt = (p) => {
+    if (p==null) return "N/A";
+    if (p<0) return `-₹${Math.abs(p).toLocaleString("en-IN")}`;
+    if (p>=10000000) return `₹${(p/10000000).toFixed(2)} Cr`;
+    if (p>=100000) return `₹${(p/100000).toFixed(2)} L`;
+    return `₹${p.toLocaleString("en-IN")}`;
   };
-
-  const selectStyle = { ...S.input, cursor: 'pointer' };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
 
-      {/* Hero Banner */}
-      <div style={{
-        position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '40px 36px',
-        background: 'linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(14,17,23,0) 60%)',
-        border: '1px solid rgba(108,99,255,0.2)',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0, borderRadius: '20px',
-          backgroundImage: 'radial-gradient(ellipse at 70% 50%, rgba(108,99,255,0.08) 0%, transparent 60%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            padding: '4px 12px', borderRadius: '999px', marginBottom: '16px',
-            background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.25)',
-            fontSize: '11px', fontWeight: 700, color: '#9b95ff', letterSpacing: '0.04em',
-          }}>
-            <Sparkles style={{ width: 12, height: 12 }} />
-            <span>CHENNAI · LIVE API · CLIENT FILTER REDUNDANCY</span>
-          </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#f0f2f8', margin: 0, lineHeight: 1.1 }}>
-            Property Listings
-            <br />
-            <span style={{ background: 'linear-gradient(90deg,#6c63ff,#9b95ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              in Chennai
-            </span>
-          </h1>
-          <p style={{ marginTop: '12px', fontSize: '14px', color: '#8892a4', lineHeight: 1.6, maxWidth: '480px' }}>
-            Explore active residential sales across 11 key localities. Real-time unit conversions and audit overlays for corrupt and honeypot records.
-          </p>
-        </div>
-        <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.04, pointerEvents: 'none' }}>
-          <Building style={{ width: 240, height: 240, color: '#fff' }} />
-        </div>
+      {/* Page header */}
+      <div style={{ paddingBottom: 20, borderBottom: '1px solid #e8e3dc' }}>
+        <h1 style={{ margin:0, fontSize: 28, color:'#1c1917', fontWeight:400, lineHeight:1.2 }}>
+          Property Listings — Chennai
+        </h1>
+        <p style={{ margin:'6px 0 0', fontSize:14, color:'#78716c' }}>
+          {totalReported.toLocaleString()} listings in the catalog · showing page {Math.floor(offset/limit)+1}
+        </p>
       </div>
 
-      {/* Filter Bar */}
-      <div style={{ ...S.card, padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#f0f2f8' }}>
-            <SlidersHorizontal style={{ width: 15, height: 15, color: '#6c63ff' }} />
-            <span>Search & Filter Engine</span>
-            <span style={{ fontSize: '11px', fontWeight: 500, color: '#8892a4' }}>— client-side redundancy active</span>
-          </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#8892a4', fontWeight: 500 }}>
-            <input
-              type="checkbox"
-              checked={hideCorrupt}
-              onChange={e => setHideCorrupt(e.target.checked)}
-              style={{ accentColor: '#6c63ff', width: 14, height: 14 }}
-            />
-            <span>Hide Corrupt & Fake</span>
-          </label>
+      {/* Filter bar */}
+      <div style={{ background:'#fff', border:'1px solid #e8e3dc', borderRadius:12, padding:'16px 20px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14, fontSize:13, fontWeight:600, color:'#44403c' }}>
+          <SlidersHorizontal size={15} color="#ea580c" />
+          Filters
+          <span style={{ fontWeight:400, color:'#a8a29e', fontSize:12 }}>— some filters applied client-side</span>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(150px, 1fr))', gap:12 }}>
           {[
-            { label: 'Locality', value: locality, onChange: e => setLocality(e.target.value),
-              options: localities.map(l => ({ value: l, label: l === 'all' ? 'All Localities' : l.toUpperCase() })) },
-            { label: 'Bedrooms (BHK)', value: bhk, onChange: e => setBhk(e.target.value),
-              options: [{ value: 'all', label: 'All BHK' }, ...['1','2','3','4','5'].map(n => ({ value: n, label: `${n} BHK` }))] },
-            { label: 'Property Type', value: propertyType, onChange: e => setPropertyType(e.target.value),
-              options: propertyTypes.map(t => ({ value: t, label: t === 'all' ? 'All Types' : t.charAt(0).toUpperCase() + t.slice(1) })) },
-            { label: 'Furnishing (Client)', value: furnishing, onChange: e => setFurnishing(e.target.value),
-              options: furnishingTypes.map(f => ({ value: f, label: f === 'all' ? 'All Furnishing' : f.charAt(0).toUpperCase() + f.slice(1) })) },
-            { label: 'Sort By', value: sortBy, onChange: e => setSortBy(e.target.value),
-              options: [
-                { value: 'default', label: 'Default Order' }, { value: 'price_asc', label: 'Price: Low → High' },
-                { value: 'price_desc', label: 'Price: High → Low' }, { value: 'area_desc', label: 'Largest Area' }, { value: 'newest', label: 'Newest Posted' }
-              ] },
-          ].map(({ label, value, onChange, options }) => (
+            { label:'Locality', val:locality, set:setLocality, opts: localities.map(l=>({ v:l, t:l==='all'?'All Localities':l.toUpperCase() })) },
+            { label:'BHK', val:bhk, set:setBhk, opts:[{v:'all',t:'All BHK'},...['1','2','3','4','5'].map(n=>({v:n,t:`${n} BHK`}))] },
+            { label:'Type', val:propertyType, set:setPropType, opts: propTypes.map(t=>({v:t,t:t==='all'?'All Types':t.charAt(0).toUpperCase()+t.slice(1)})) },
+            { label:'Furnishing', val:furnishing, set:setFurnishing, opts:[{v:'all',t:'Any'},{v:'unfurnished',t:'Unfurnished'},{v:'semi-furnished',t:'Semi-furnished'},{v:'fully-furnished',t:'Fully-furnished'}] },
+            { label:'Sort', val:sortBy, set:setSortBy, opts:[{v:'default',t:'Default'},{v:'price_asc',t:'Price ↑'},{v:'price_desc',t:'Price ↓'},{v:'area_desc',t:'Area ↓'},{v:'newest',t:'Newest'}] },
+          ].map(({ label, val, set, opts }) => (
             <div key={label}>
-              <label style={S.label}>{label}</label>
-              <select value={value} onChange={onChange} style={selectStyle}>
-                {options.map(o => <option key={o.value} value={o.value} style={{ background: '#1d2433', color: '#f0f2f8' }}>{o.label}</option>)}
+              <label style={{ display:'block', fontSize:11, fontWeight:600, color:'#a8a29e', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:4 }}>{label}</label>
+              <select value={val} onChange={e=>set(e.target.value)} style={inp}>
+                {opts.map(o=><option key={o.v} value={o.v}>{o.t}</option>)}
               </select>
             </div>
           ))}
           <div>
-            <label style={S.label}>Max Price ₹ (Client)</label>
-            <input
-              type="number"
-              placeholder="e.g. 10000000"
-              value={maxPrice}
-              onChange={e => setMaxPrice(e.target.value)}
-              style={S.input}
-            />
+            <label style={{ display:'block', fontSize:11, fontWeight:600, color:'#a8a29e', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:4 }}>Max price</label>
+            <input type="number" placeholder="e.g. 10000000" value={maxPrice} onChange={e=>setMaxPrice(e.target.value)} style={inp} />
+          </div>
+          <div style={{ display:'flex', alignItems:'flex-end', paddingBottom:2 }}>
+            <label style={{ display:'flex', alignItems:'center', gap:7, fontSize:13, color:'#57534e', cursor:'pointer' }}>
+              <input type="checkbox" checked={hideCorrupt} onChange={e=>setHideBad(e.target.checked)} style={{ accentColor:'#ea580c', width:14, height:14 }} />
+              Hide flagged records
+            </label>
           </div>
         </div>
       </div>
 
-      {/* Pagination bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#8892a4', padding: '0 4px' }}>
-        <span>
-          Showing <strong style={{ color: '#f0f2f8' }}>{filteredListings.length}</strong> listings · offset {offset}–{offset + listings.length} of {totalReported}+ in catalog
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={handlePrevPage}
-            disabled={offset === 0 || loading}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px',
-              borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
-              color: offset === 0 || loading ? '#4a5568' : '#f0f2f8', fontSize: '12px', fontWeight: 500, cursor: offset === 0 || loading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <ChevronLeft style={{ width: 13, height: 13 }} /> Previous
+      {/* Pagination controls */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:13, color:'#78716c' }}>
+        <span>Showing <strong style={{color:'#1c1917'}}>{filtered.length}</strong> of {listings.length} loaded</span>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <button onClick={prevPage} disabled={offset===0||loading}
+            style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 12px', borderRadius:7, border:'1px solid #e8e3dc', background:'#fff', fontSize:13, color: offset===0||loading ? '#d4c5b2' : '#57534e', cursor: offset===0||loading ? 'not-allowed':'pointer' }}>
+            <ChevronLeft size={14}/> Prev
           </button>
-          <span style={{ fontWeight: 600, color: '#f0f2f8', padding: '0 4px' }}>Page {Math.floor(offset / limit) + 1}</span>
-          <button
-            onClick={handleNextPage}
-            disabled={!hasMore || loading}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px',
-              borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
-              color: !hasMore || loading ? '#4a5568' : '#f0f2f8', fontSize: '12px', fontWeight: 500, cursor: !hasMore || loading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            Next <ChevronRight style={{ width: 13, height: 13 }} />
+          <span style={{ fontWeight:600, color:'#1c1917' }}>Pg {Math.floor(offset/limit)+1}</span>
+          <button onClick={nextPage} disabled={!hasMore||loading}
+            style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 12px', borderRadius:7, border:'1px solid #e8e3dc', background:'#fff', fontSize:13, color: !hasMore||loading ? '#d4c5b2' : '#57534e', cursor: !hasMore||loading ? 'not-allowed':'pointer' }}>
+            Next <ChevronRight size={14}/>
           </button>
         </div>
       </div>
 
       {/* Grid */}
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} style={{ ...S.card, padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div className="skeleton" style={{ height: 18, width: '70%' }} />
-              <div className="skeleton" style={{ height: 14, width: '45%' }} />
-              <div className="skeleton" style={{ height: 40, width: '100%' }} />
-              <div className="skeleton" style={{ height: 14, width: '35%' }} />
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16 }}>
+          {[...Array(6)].map((_,i)=>(
+            <div key={i} className="card" style={{ padding:20, display:'flex', flexDirection:'column', gap:10 }}>
+              <div className="skeleton" style={{height:18, width:'65%'}} />
+              <div className="skeleton" style={{height:13, width:'40%'}} />
+              <div className="skeleton" style={{height:38}} />
             </div>
           ))}
         </div>
-      ) : filteredListings.length === 0 ? (
-        <div style={{ ...S.card, padding: '64px 24px', textAlign: 'center' }}>
-          <Building style={{ width: 48, height: 48, color: '#2a3349', margin: '0 auto 16px' }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#f0f2f8', margin: '0 0 6px' }}>No properties found</h3>
-          <p style={{ fontSize: '13px', color: '#8892a4', margin: 0 }}>Try relaxing your price or furnishing filters</p>
+      ) : filtered.length===0 ? (
+        <div className="card" style={{ padding:'60px 24px', textAlign:'center' }}>
+          <Building size={40} color="#d4c5b2" style={{margin:'0 auto 12px'}} />
+          <h3 style={{margin:'0 0 6px', fontSize:16, fontWeight:600}}>No properties found</h3>
+          <p style={{margin:0, fontSize:13, color:'#78716c'}}>Try relaxing your filters</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-          {filteredListings.map((l) => {
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16 }}>
+          {filtered.map(l => {
             const isCorrupt = CORRUPT_IDS.has(l.listing_id);
-            const isFake = FAKE_IDS.has(l.listing_id);
-            const isSqMeters = l.website === "magichomes" && l.carpet_area < 250 && l.property_type !== "plot";
-            const effectiveSqft = isSqMeters ? Math.round(l.carpet_area * 10.7639) : l.carpet_area;
-            const pricePerSqft = effectiveSqft > 0 ? Math.round(l.price / effectiveSqft) : 0;
-            const saved = isSaved(l.listing_id);
+            const isFake    = FAKE_IDS.has(l.listing_id);
+            const isSqM     = l.website==="magichomes" && l.carpet_area<250 && l.property_type!=="plot";
+            const sqft      = isSqM ? Math.round(l.carpet_area*10.7639) : l.carpet_area;
+            const saved     = isSaved(l.listing_id);
 
             return (
-              <div
-                key={l.listing_id}
-                className="glass-hover"
-                style={{
-                  ...S.card,
-                  display: 'flex', flexDirection: 'column',
-                  ...(isCorrupt ? { borderColor: 'rgba(251,113,133,0.2)' } : {}),
-                  ...(isFake ? { borderColor: 'rgba(108,99,255,0.2)' } : {}),
-                }}
-              >
-                <div style={{ padding: '20px', flex: 1 }}>
+              <div key={l.listing_id} className="card" style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+                {/* Color stripe for flagged */}
+                {(isCorrupt||isFake) && (
+                  <div style={{ height:3, background: isCorrupt ? '#fca5a5' : '#fde68a' }} />
+                )}
+
+                <div style={{ padding:'16px 18px', flex:1 }}>
                   {/* Top row */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                      <span style={{
-                        fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-                        padding: '3px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', color: '#8892a4'
-                      }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      <span style={{ fontSize:11, fontWeight:600, padding:'2px 8px', borderRadius:4, background:'#f5f5f4', color:'#57534e', textTransform:'capitalize' }}>
                         {l.property_type}
                       </span>
-                      {l.is_live ? (
-                        <span style={{ fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: 'rgba(45,212,191,0.1)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.2)' }}>
-                          Live
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,255,255,0.04)', color: '#4a5568' }}>
-                          Inactive
-                        </span>
-                      )}
+                      <span style={{ fontSize:11, fontWeight:600, padding:'2px 8px', borderRadius:4, background: l.is_live ? '#dcfce7' : '#f5f5f4', color: l.is_live ? '#15803d' : '#a8a29e' }}>
+                        {l.is_live ? 'Live' : 'Inactive'}
+                      </span>
                     </div>
-                    <button
-                      onClick={() => toggleSave(l.listing_id)}
-                      style={{
-                        padding: '6px', borderRadius: '8px', background: saved ? 'rgba(251,113,133,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: saved ? '1px solid rgba(251,113,133,0.25)' : '1px solid transparent',
-                        cursor: 'pointer', transition: 'all 0.15s',
-                      }}
-                      title={saved ? "Saved" : "Save Listing"}
-                    >
-                      <Bookmark style={{ width: 14, height: 14, color: saved ? '#fb7185' : '#8892a4', fill: saved ? '#fb7185' : 'none' }} />
+                    <button onClick={()=>toggleSave(l.listing_id)} title={saved?"Unsave":"Save"}
+                      style={{ padding:4, border:'none', background:'transparent', cursor:'pointer', color: saved ? '#ea580c' : '#d4c5b2' }}>
+                      <Bookmark size={16} fill={saved ? '#ea580c' : 'none'} />
                     </button>
                   </div>
 
-                  {/* Title */}
-                  <Link href={`/listings/${l.listing_id}`}>
-                    <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#f0f2f8', margin: '0 0 4px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', cursor: 'pointer' }}>
+                  <Link href={`/listings/${l.listing_id}`} style={{ textDecoration:'none' }}>
+                    <h2 style={{ margin:'0 0 4px', fontSize:15, fontWeight:400, color:'#1c1917', lineHeight:1.3, display:'-webkit-box', WebkitLineClamp:1, WebkitBoxOrient:'vertical', overflow:'hidden' }}>
                       {l.apartment_name}
                     </h2>
                   </Link>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8892a4' }}>
-                    <MapPin style={{ width: 12, height: 12, flexShrink: 0 }} />
-                    <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{l.locality}</span>
-                    <span style={{ color: '#2a3349' }}>·</span>
-                    <span style={{ color: '#4a5568' }}>{l.website}</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:4, fontSize:12, color:'#78716c', marginBottom:12 }}>
+                    <MapPin size={12} />
+                    <span style={{ textTransform:'capitalize', fontWeight:500 }}>{l.locality}</span>
+                    <span>·</span>
+                    <span style={{ color:'#a8a29e' }}>{l.website}</span>
                   </div>
 
-                  {/* Price row */}
-                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#f0f2f8', letterSpacing: '-0.02em' }}>
-                        {formatPrice(l.price)}
-                      </div>
-                      {pricePerSqft > 0 && l.price > 0 && (
-                        <div style={{ fontSize: '11px', color: '#8892a4', marginTop: '1px' }}>
-                          ₹{pricePerSqft.toLocaleString("en-IN")}/sqft
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#f0f2f8' }}>{l.bedroom} BHK</div>
-                      <div style={{ fontSize: '11px', color: '#8892a4', textTransform: 'capitalize' }}>{l.furnishing || "Unfurnished"}</div>
-                    </div>
+                  {/* Price */}
+                  <div style={{ fontSize:22, fontWeight:700, color:'#1c1917', lineHeight:1, marginBottom:4, fontFamily:"'DM Serif Display',Georgia,serif" }}>
+                    {fmt(l.price)}
+                  </div>
+                  <div style={{ fontSize:12, color:'#a8a29e', marginBottom:12 }}>
+                    {l.bedroom} BHK · {l.furnishing||'Unfurnished'} · {sqft} sqft{isSqM && <span style={{color:'#d97706'}}> (converted)</span>}
                   </div>
 
-                  {/* Specs strip */}
-                  <div style={{
-                    marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-                    padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.05)', fontSize: '12px', color: '#8892a4', gap: '4px',
-                  }}>
-                    {[
-                      [BedDouble, `${l.bedroom} Beds`],
-                      [Bath, `${l.bathroom} Baths`],
-                      [Maximize2, `${effectiveSqft} sqft`],
-                    ].map(([Icon, text]) => (
-                      <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Icon style={{ width: 12, height: 12, color: '#4a5568' }} />
-                        <span>{text}</span>
-                      </div>
-                    ))}
+                  {/* Specs row */}
+                  <div style={{ display:'flex', gap:14, fontSize:12, color:'#78716c', padding:'10px 0', borderTop:'1px solid #f5f5f4' }}>
+                    <span style={{ display:'flex', alignItems:'center', gap:4 }}><BedDouble size={13} color="#a8a29e"/> {l.bedroom}bd</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:4 }}><Bath size={13} color="#a8a29e"/> {l.bathroom}ba</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:4 }}><Maximize2 size={13} color="#a8a29e"/> {sqft} sqft</span>
                   </div>
 
-                  {/* Alert badges */}
-                  {isSqMeters && (
-                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, padding: '7px 10px', borderRadius: '8px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}>
-                      <AlertTriangle style={{ width: 12, height: 12, flexShrink: 0 }} />
-                      <span>Magichomes: {l.carpet_area} m² → {effectiveSqft} sqft</span>
-                    </div>
-                  )}
+                  {/* Alert banners */}
                   {isCorrupt && (
-                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, padding: '7px 10px', borderRadius: '8px', background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.2)', color: '#fb7185' }}>
-                      <ShieldAlert style={{ width: 12, height: 12, flexShrink: 0 }} />
-                      <span>Corrupt Record · Physically impossible values</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, padding:'6px 10px', borderRadius:6, background:'#fff1f2', border:'1px solid #fecdd3', color:'#be123c', marginTop:10 }}>
+                      <ShieldAlert size={12}/> Corrupt record — physically impossible values
                     </div>
                   )}
                   {isFake && (
-                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, padding: '7px 10px', borderRadius: '8px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.25)', color: '#9b95ff' }}>
-                      <ShieldAlert style={{ width: 12, height: 12, flexShrink: 0 }} />
-                      <span>Honeypot · Rental price listed as sale</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, padding:'6px 10px', borderRadius:6, background:'#fffbeb', border:'1px solid #fde68a', color:'#92400e', marginTop:10 }}>
+                      <AlertTriangle size={12}/> Honeypot — rental price listed as sale
                     </div>
                   )}
                 </div>
 
-                {/* Footer */}
-                <div style={{ padding: '10px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#4a5568' }}>{l.listing_id}</span>
-                  <Link href={`/listings/${l.listing_id}`} style={{ fontSize: '12px', fontWeight: 600, color: '#6c63ff', textDecoration: 'none' }}>
-                    View Details →
+                <div style={{ padding:'10px 18px', background:'#fafaf8', borderTop:'1px solid #f5f5f4', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span style={{ fontFamily:'monospace', fontSize:11, color:'#a8a29e' }}>{l.listing_id}</span>
+                  <Link href={`/listings/${l.listing_id}`} style={{ fontSize:13, fontWeight:600, color:'#ea580c', textDecoration:'none' }}>
+                    Details →
                   </Link>
                 </div>
               </div>
