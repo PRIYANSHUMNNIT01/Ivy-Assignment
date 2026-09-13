@@ -161,116 +161,354 @@ export default function InsightsPage() {
     : findings.filter((f) => f.category === selectedCategory);
 
   return (
-    <div className="space-y-8 py-4">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-purple-800/60 backdrop-blur-md text-purple-200 text-xs font-semibold mb-3">
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span>Chennai Data Intelligence & Forensic Audit</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '16px 0' }}>
+      {/* Hero Banner with violet glow */}
+      <div style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: '20px',
+        padding: '36px 32px',
+        background: 'linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(22,27,39,0.85) 55%, rgba(14,17,23,0.95) 100%)',
+        border: '1px solid rgba(108,99,255,0.2)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.37), 0 0 40px rgba(108,99,255,0.08)',
+      }}>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'radial-gradient(ellipse at 85% 30%, rgba(108,99,255,0.18) 0%, transparent 65%)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '680px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '4px 12px',
+            borderRadius: '999px',
+            marginBottom: '14px',
+            background: 'rgba(108,99,255,0.15)',
+            border: '1px solid rgba(108,99,255,0.3)',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#9b95ff',
+            letterSpacing: '0.04em',
+          }}>
+            <BarChart3 style={{ width: 13, height: 13 }} />
+            <span>CHENNAI DATA INTELLIGENCE & FORENSIC AUDIT</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+          <h1 style={{
+            fontSize: '2rem',
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            color: '#f0f2f8',
+            margin: 0,
+            lineHeight: 1.15
+          }}>
             Insights & Data Quality Audit
           </h1>
-          <p className="text-purple-200 text-sm sm:text-base mt-2 leading-relaxed">
+          <p style={{
+            marginTop: '12px',
+            fontSize: '14px',
+            color: '#8892a4',
+            lineHeight: 1.6,
+            margin: '12px 0 0'
+          }}>
             Forensic analysis of the Ivy Homes Property API. Complete audit of documented claims vs actual runtime behaviors, statistical distributions, and honeypot detection.
           </p>
         </div>
+        <div style={{ position: 'absolute', right: '-15px', bottom: '-25px', opacity: 0.04, pointerEvents: 'none' }}>
+          <BarChart3 style={{ width: 220, height: 220, color: '#fff' }} />
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+      {/* Tab Navigation */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        paddingBottom: '12px',
+        overflowX: 'auto',
+      }}>
         <button
           onClick={() => setActiveTab("discrepancies")}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-            activeTab === "discrepancies"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
-              : "text-slate-600 hover:bg-slate-100"
-          }`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '9px 18px',
+            fontSize: '13px',
+            fontWeight: 700,
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            background: activeTab === "discrepancies" ? 'rgba(108,99,255,0.15)' : 'transparent',
+            border: activeTab === "discrepancies" ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+            color: activeTab === "discrepancies" ? '#9b95ff' : '#8892a4',
+          }}
         >
-          Documentation Discrepancies ({findings.length})
+          <ShieldAlert style={{ width: 15, height: 15 }} />
+          <span>Documentation Discrepancies ({findings.length})</span>
         </button>
         <button
           onClick={() => setActiveTab("answers")}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-            activeTab === "answers"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
-              : "text-slate-600 hover:bg-slate-100"
-          }`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '9px 18px',
+            fontSize: '13px',
+            fontWeight: 700,
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            background: activeTab === "answers" ? 'rgba(108,99,255,0.15)' : 'transparent',
+            border: activeTab === "answers" ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+            color: activeTab === "answers" ? '#9b95ff' : '#8892a4',
+          }}
         >
-          The 10 Submission Answers
+          <CheckCircle2 style={{ width: 15, height: 15 }} />
+          <span>The 10 Submission Answers</span>
         </button>
         <button
           onClick={() => setActiveTab("analytics")}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-            activeTab === "analytics"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
-              : "text-slate-600 hover:bg-slate-100"
-          }`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '9px 18px',
+            fontSize: '13px',
+            fontWeight: 700,
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            background: activeTab === "analytics" ? 'rgba(108,99,255,0.15)' : 'transparent',
+            border: activeTab === "analytics" ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+            color: activeTab === "analytics" ? '#9b95ff' : '#8892a4',
+          }}
         >
-          City Analytics Summary
+          <BarChart3 style={{ width: 15, height: 15 }} />
+          <span>City Analytics Summary</span>
         </button>
       </div>
 
       {/* Tab 1: Documentation Discrepancies */}
       {activeTab === "discrepancies" && (
-        <div className="space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Category Filter Pills */}
-          <div className="flex items-center space-x-2 overflow-x-auto pb-2 text-xs">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '4px',
+          }}>
             {["all", "auth", "pagination", "completeness", "filters", "missing_endpoint", "units", "timestamps", "duplicates", "data_quality", "fraud", "consistency"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg font-semibold uppercase tracking-wider text-[11px] whitespace-nowrap transition-all ${
-                  selectedCategory === cat
-                    ? "bg-slate-900 text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  background: selectedCategory === cat ? 'rgba(108,99,255,0.12)' : 'rgba(255,255,255,0.04)',
+                  color: selectedCategory === cat ? '#9b95ff' : '#8892a4',
+                  border: selectedCategory === cat ? '1px solid rgba(108,99,255,0.25)' : '1px solid rgba(255,255,255,0.06)',
+                }}
               >
                 {cat.replace("_", " ")}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Discrepancy Cards Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+            gap: '16px',
+          }}>
             {filteredFindings.map((f, idx) => (
               <div
                 key={idx}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-3 flex flex-col justify-between"
+                className="glass-hover"
+                style={{
+                  background: 'rgba(22,27,39,0.7)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  overflow: 'hidden',
+                }}
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* Endpoint & Category */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <span style={{
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#9b95ff',
+                      background: 'rgba(108,99,255,0.12)',
+                      border: '1px solid rgba(108,99,255,0.25)',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                    }}>
                       {f.endpoint}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-800">
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(255,255,255,0.04)',
+                      color: '#8892a4',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}>
                       {f.category}
                     </span>
                   </div>
 
-                  <div className="space-y-2 mt-3 text-xs">
-                    <div className="p-2.5 rounded-xl bg-red-50/70 border border-red-100 text-red-950">
-                      <span className="font-bold text-red-800 block text-[10px] uppercase tracking-wider mb-0.5">Documented Claim:</span>
+                  {/* Documented Claim (Rose-tinted box) */}
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    background: 'rgba(251,113,133,0.06)',
+                    border: '1px solid rgba(251,113,133,0.15)',
+                    color: '#fb7185',
+                    fontSize: '12px',
+                    lineHeight: 1.55,
+                  }}>
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#fb7185',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginBottom: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}>
+                      <FileText style={{ width: 12, height: 12 }} />
+                      <span>Documented Claim</span>
+                    </div>
+                    <div style={{ color: '#fb7185' }}>
                       {f.documented}
                     </div>
+                  </div>
 
-                    <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 text-emerald-950">
-                      <span className="font-bold text-emerald-800 block text-[10px] uppercase tracking-wider mb-0.5">Actual Runtime Reality:</span>
+                  {/* Actual Runtime Reality (Teal-tinted box) */}
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    background: 'rgba(45,212,191,0.06)',
+                    border: '1px solid rgba(45,212,191,0.15)',
+                    color: '#2dd4bf',
+                    fontSize: '12px',
+                    lineHeight: 1.55,
+                  }}>
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#2dd4bf',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginBottom: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}>
+                      <CheckCircle2 style={{ width: 12, height: 12 }} />
+                      <span>Actual Runtime Reality</span>
+                    </div>
+                    <div style={{ color: '#2dd4bf' }}>
                       {f.actual}
                     </div>
+                  </div>
 
-                    <div className="p-2 rounded-lg bg-slate-50 text-slate-600 text-[11px]">
-                      <span className="font-semibold text-slate-700">Developer Impact: </span>
+                  {/* Developer Impact (Neutral dark box) */}
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    fontSize: '11px',
+                    lineHeight: 1.5,
+                  }}>
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8892a4',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginRight: '6px',
+                    }}>
+                      Developer Impact:
+                    </span>
+                    <span style={{ color: '#f0f2f8' }}>
                       {f.impact}
-                    </div>
+                    </span>
                   </div>
                 </div>
 
+                {/* Evidence Footer */}
                 {f.evidence && f.evidence.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                    <span className="font-semibold text-slate-600">Sample Evidence IDs: </span>
-                    <span className="font-mono text-slate-700">{f.evidence.slice(0, 6).join(", ")}</span>
-                    {f.evidence.length > 6 && <span className="text-slate-400"> +{f.evidence.length - 6} more</span>}
+                  <div style={{
+                    background: 'rgba(0,0,0,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: '0 0 16px 16px',
+                    padding: '10px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '6px',
+                    fontSize: '11px',
+                  }}>
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8892a4',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginRight: '4px',
+                    }}>
+                      Sample Evidence:
+                    </span>
+                    {f.evidence.slice(0, 6).map((id) => (
+                      <span
+                        key={id}
+                        style={{
+                          fontFamily: 'monospace',
+                          fontSize: '11px',
+                          color: '#9b95ff',
+                          background: 'rgba(108,99,255,0.1)',
+                          border: '1px solid rgba(108,99,255,0.2)',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {id}
+                      </span>
+                    ))}
+                    {f.evidence.length > 6 && (
+                      <span style={{ fontSize: '11px', color: '#4a5568', fontStyle: 'italic' }}>
+                        +{f.evidence.length - 6} more
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -279,33 +517,104 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* Tab 2: The 10 Answers */}
+      {/* Tab 2: The 10 Submission Answers */}
       {activeTab === "answers" && (
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div className="p-6 bg-slate-50/60 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-900">Final Evaluated Answers for Chennai</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Anchored to fixed reference timestamp <code className="font-mono font-semibold text-slate-800">2026-09-10T00:00:00+05:30 (IST)</code>
+        <div style={{
+          background: 'rgba(22,27,39,0.7)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: '16px',
+          overflow: 'hidden',
+        }}>
+          {/* Answers Header */}
+          <div style={{
+            padding: '22px 24px',
+            background: 'rgba(255,255,255,0.02)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#f0f2f8', margin: 0, letterSpacing: '-0.02em' }}>
+              Final Evaluated Answers for Chennai
+            </h2>
+            <p style={{ fontSize: '12px', color: '#8892a4', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span>Anchored to fixed reference timestamp</span>
+              <code style={{
+                fontFamily: 'monospace',
+                fontWeight: 600,
+                color: '#9b95ff',
+                background: 'rgba(108,99,255,0.12)',
+                border: '1px solid rgba(108,99,255,0.25)',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                fontSize: '11px',
+              }}>
+                2026-09-10T00:00:00+05:30 (IST)
+              </code>
             </p>
           </div>
 
-          <div className="divide-y divide-slate-100">
-            {tenAnswers.map((item) => (
-              <div key={item.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
-                <div className="max-w-xl">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-mono">
+          {/* Answers Rows */}
+          <div>
+            {tenAnswers.map((item, idx) => (
+              <div
+                key={item.id}
+                style={{
+                  padding: '20px 24px',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '20px',
+                  borderBottom: idx < tenAnswers.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ maxWidth: '720px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(108,99,255,0.12)',
+                      border: '1px solid rgba(108,99,255,0.25)',
+                      color: '#9b95ff',
+                    }}>
                       {item.id}
                     </span>
-                    <span className="text-xs font-mono text-emerald-700 font-semibold">
+                    <span style={{
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#9b95ff',
+                    }}>
                       {item.key}
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-900 mt-1">{item.q}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.note}</p>
+                  <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f0f2f8', margin: '0 0 4px 0' }}>
+                    {item.q}
+                  </h3>
+                  <p style={{ fontSize: '12px', color: '#8892a4', margin: 0, lineHeight: 1.55 }}>
+                    {item.note}
+                  </p>
                 </div>
-                <div className="md:text-right flex-shrink-0">
-                  <div className="text-lg font-black text-slate-900 font-mono">
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{
+                    fontSize: '17px',
+                    fontWeight: 800,
+                    color: '#f0f2f8',
+                    fontFamily: 'monospace',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                  }}>
                     {item.ans}
                   </div>
                 </div>
@@ -317,45 +626,174 @@ export default function InsightsPage() {
 
       {/* Tab 3: City Analytics Summary */}
       {activeTab === "analytics" && (
-        <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Amber-tinted warning banner */}
+          <div style={{
+            padding: '14px 18px',
+            borderRadius: '14px',
+            background: 'rgba(251,191,36,0.08)',
+            border: '1px solid rgba(251,191,36,0.25)',
+            color: '#fbbf24',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            lineHeight: 1.5,
+          }}>
+            <AlertTriangle style={{ width: 16, height: 16, color: '#fbbf24', flexShrink: 0 }} />
             <span>
-              <strong>Note:</strong> The documented endpoint <code className="font-mono bg-amber-100 px-1 py-0.5 rounded">/v1/analytics/summary</code> returns 404 Not Found. These aggregates are precomputed directly across the complete 4,100 listings dataset.
+              <strong style={{ fontWeight: 700 }}>Note:</strong> The documented endpoint{' '}
+              <code style={{
+                fontFamily: 'monospace',
+                background: 'rgba(251,191,36,0.15)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                color: '#fbbf24',
+              }}>
+                /v1/analytics/summary
+              </code>{' '}
+              returns 404 Not Found. These aggregates are precomputed directly across the complete 4,100 listings dataset.
             </span>
           </div>
 
           {/* Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Listings</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">4,100</div>
-              <div className="text-[11px] text-emerald-600 font-semibold mt-1">3,233 Active (78.8%)</div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+          }}>
+            <div
+              className="glass-hover"
+              style={{
+                background: 'rgba(22,27,39,0.7)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '16px',
+                padding: '20px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Total Listings
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: 900, color: '#f0f2f8', fontFamily: 'monospace', margin: '8px 0 4px' }}>
+                4,100
+              </div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#2dd4bf' }}>
+                3,233 Active (78.8%)
+              </div>
+              <div style={{ position: 'absolute', right: '16px', top: '16px', opacity: 0.15, pointerEvents: 'none' }}>
+                <Layers style={{ width: 28, height: 28, color: '#2dd4bf' }} />
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Median Price</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">₹1.03 Cr</div>
-              <div className="text-[11px] text-slate-500 mt-1">Avg: ₹1.14 Cr</div>
+            <div
+              className="glass-hover"
+              style={{
+                background: 'rgba(22,27,39,0.7)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '16px',
+                padding: '20px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Median Price
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: 900, color: '#f0f2f8', fontFamily: 'monospace', margin: '8px 0 4px' }}>
+                ₹1.03 Cr
+              </div>
+              <div style={{ fontSize: '11px', color: '#8892a4' }}>
+                Avg: ₹1.14 Cr
+              </div>
+              <div style={{ position: 'absolute', right: '16px', top: '16px', opacity: 0.15, pointerEvents: 'none' }}>
+                <TrendingUp style={{ width: 28, height: 28, color: '#6c63ff' }} />
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Median Price/Sqft</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">₹9,844</div>
-              <div className="text-[11px] text-slate-500 mt-1">Chennai Residential Avg</div>
+            <div
+              className="glass-hover"
+              style={{
+                background: 'rgba(22,27,39,0.7)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '16px',
+                padding: '20px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Median Price/Sqft
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: 900, color: '#f0f2f8', fontFamily: 'monospace', margin: '8px 0 4px' }}>
+                ₹9,844
+              </div>
+              <div style={{ fontSize: '11px', color: '#8892a4' }}>
+                Chennai Residential Avg
+              </div>
+              <div style={{ position: 'absolute', right: '16px', top: '16px', opacity: 0.15, pointerEvents: 'none' }}>
+                <Building2 style={{ width: 28, height: 28, color: '#fbbf24' }} />
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Rentals</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">1,550</div>
-              <div className="text-[11px] text-blue-600 font-semibold mt-1">Velachery: 133 properties</div>
+            <div
+              className="glass-hover"
+              style={{
+                background: 'rgba(22,27,39,0.7)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '16px',
+                padding: '20px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Total Rentals
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: 900, color: '#f0f2f8', fontFamily: 'monospace', margin: '8px 0 4px' }}>
+                1,550
+              </div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9b95ff' }}>
+                Velachery: 133 properties
+              </div>
+              <div style={{ position: 'absolute', right: '16px', top: '16px', opacity: 0.15, pointerEvents: 'none' }}>
+                <MapPin style={{ width: 28, height: 28, color: '#fb7185' }} />
+              </div>
             </div>
           </div>
 
-          {/* Locality Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Distribution by Locality (Chennai)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+          {/* Locality Distribution Cards */}
+          <div style={{
+            background: 'rgba(22,27,39,0.7)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '16px',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MapPin style={{ width: 18, height: 18, color: '#6c63ff' }} />
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#f0f2f8', margin: 0 }}>
+                Distribution by Locality (Chennai)
+              </h3>
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '12px',
+            }}>
               {[
                 { loc: "T Nagar", count: 428, median: "₹1.28 Cr", rate: "₹11,400/sqft" },
                 { loc: "Adyar", count: 412, median: "₹1.24 Cr", rate: "₹11,100/sqft" },
@@ -368,12 +806,31 @@ export default function InsightsPage() {
                 { loc: "Thoraipakkam", count: 368, median: "₹85.5 L", rate: "₹8,300/sqft" },
                 { loc: "Tambaram", count: 365, median: "₹72.0 L", rate: "₹7,200/sqft" },
               ].map((row) => (
-                <div key={row.loc} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex justify-between items-center">
+                <div
+                  key={row.loc}
+                  className="glass-hover"
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'default',
+                  }}
+                >
                   <div>
-                    <div className="font-bold text-slate-900">{row.loc}</div>
-                    <div className="text-slate-500 text-[11px]">{row.count} listings · {row.rate}</div>
+                    <div style={{ fontWeight: 700, color: '#f0f2f8', fontSize: '13px' }}>
+                      {row.loc}
+                    </div>
+                    <div style={{ color: '#8892a4', fontSize: '11px', marginTop: '2px' }}>
+                      {row.count} listings · {row.rate}
+                    </div>
                   </div>
-                  <div className="font-black text-slate-800 text-sm">{row.median}</div>
+                  <div style={{ fontWeight: 800, color: '#f0f2f8', fontSize: '14px', fontFamily: 'monospace' }}>
+                    {row.median}
+                  </div>
                 </div>
               ))}
             </div>

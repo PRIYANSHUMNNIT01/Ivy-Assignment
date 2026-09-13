@@ -25,6 +25,24 @@ import {
   Sparkles
 } from "lucide-react";
 
+const S = {
+  card: {
+    background: 'rgba(22, 27, 39, 0.7)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    borderRadius: '16px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '10px',
+    fontWeight: 700,
+    color: '#8892a4',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+};
+
 export default function ListingDetailPage() {
   const params = useParams();
   const id = params?.id;
@@ -64,29 +82,93 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto py-12 space-y-6 animate-pulse">
-        <div className="h-6 bg-slate-200 rounded w-28" />
-        <div className="h-10 bg-slate-200 rounded w-3/4" />
-        <div className="h-64 bg-slate-200 rounded-3xl" />
+      <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', padding: '16px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="skeleton" style={{ height: '36px', width: '180px', borderRadius: '10px' }} />
+          <div className="skeleton" style={{ height: '36px', width: '140px', borderRadius: '10px' }} />
+        </div>
+        <div style={{ ...S.card, padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, minWidth: '280px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="skeleton" style={{ height: '24px', width: '80px', borderRadius: '6px' }} />
+                <div className="skeleton" style={{ height: '24px', width: '120px', borderRadius: '6px' }} />
+              </div>
+              <div className="skeleton" style={{ height: '36px', width: '70%', borderRadius: '8px' }} />
+              <div className="skeleton" style={{ height: '16px', width: '40%', borderRadius: '6px' }} />
+            </div>
+            <div className="skeleton" style={{ height: '90px', width: '220px', borderRadius: '16px' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="skeleton" style={{ height: '64px', borderRadius: '12px' }} />
+            ))}
+          </div>
+          <div className="skeleton" style={{ height: '100px', width: '100%', borderRadius: '12px' }} />
+          <div className="skeleton" style={{ height: '76px', width: '100%', borderRadius: '14px' }} />
+        </div>
       </div>
     );
   }
 
   if (error || !listing) {
     return (
-      <div className="max-w-xl mx-auto py-16 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-          <ShieldAlert className="w-6 h-6" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-800">Property Record Not Found</h2>
-        <p className="text-xs text-slate-500">{error || "The requested listing does not exist."}</p>
-        <Link
-          href="/"
-          className="inline-flex items-center space-x-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+      <div style={{ maxWidth: '480px', margin: '60px auto', padding: '0 16px' }}>
+        <div
+          style={{
+            ...S.card,
+            padding: '40px 32px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px',
+            borderColor: 'rgba(251, 113, 133, 0.25)',
+          }}
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to All Listings</span>
-        </Link>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: 'rgba(251, 113, 133, 0.12)',
+              border: '1px solid rgba(251, 113, 133, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fb7185',
+            }}
+          >
+            <ShieldAlert style={{ width: 24, height: 24 }} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f0f2f8', margin: 0 }}>
+            Property Record Not Found
+          </h2>
+          <p style={{ fontSize: '13px', color: '#8892a4', margin: 0, lineHeight: 1.5 }}>
+            {error || "The requested listing does not exist."}
+          </p>
+          <Link
+            href="/"
+            className="glass-hover"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#6c63ff',
+              padding: '8px 16px',
+              borderRadius: '10px',
+              background: 'rgba(108, 99, 255, 0.1)',
+              border: '1px solid rgba(108, 99, 255, 0.25)',
+              textDecoration: 'none',
+              marginTop: '8px',
+            }}
+          >
+            <ArrowLeft style={{ width: 14, height: 14 }} />
+            <span>Back to All Listings</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -96,238 +178,452 @@ export default function ListingDetailPage() {
   const pricePerSqft = effectiveSqft > 0 ? Math.round(listing.price / effectiveSqft) : 0;
 
   const formatPrice = (p) => {
+    if (p === undefined || p === null) return "N/A";
     if (p < 0) return `-₹${Math.abs(p).toLocaleString("en-IN")}`;
     if (p >= 10000000) return `₹${(p / 10000000).toFixed(2)} Cr`;
     if (p >= 100000) return `₹${(p / 100000).toFixed(2)} L`;
     return `₹${p.toLocaleString("en-IN")}`;
   };
 
+  const specs = [
+    { icon: BedDouble, label: "Bedrooms", value: `${listing.bedroom} BHK` },
+    { icon: Bath, label: "Bathrooms", value: `${listing.bathroom} Baths` },
+    {
+      icon: Maximize2,
+      label: "Carpet Area",
+      value: (
+        <span>
+          {effectiveSqft} sqft
+          {isSqMeters && (
+            <span style={{ fontSize: '11px', color: '#8892a4', fontWeight: 400, marginLeft: '4px' }}>
+              ({listing.carpet_area} m²)
+            </span>
+          )}
+        </span>
+      ),
+    },
+    { icon: Layers, label: "Floor Level", value: `Floor ${listing.floor} of ${listing.total_floors}` },
+    { icon: Compass, label: "Facing", value: listing.facing_direction || "Not specified", capitalize: true },
+    { icon: Car, label: "Parking", value: listing.covered_parking ? `${listing.covered_parking} Covered` : "None" },
+    { icon: Calendar, label: "Posted Date", value: (listing.posted_at || "").slice(0, 10) || "N/A" },
+    { icon: Sparkles, label: "Furnishing", value: listing.furnishing || "Unfurnished", capitalize: true },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8 py-4">
+    <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', padding: '8px 0' }}>
       {/* Back Button & Save Action */}
-      <div className="flex items-center justify-between">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <Link
           href="/"
-          className="inline-flex items-center space-x-2 text-xs font-semibold text-slate-600 hover:text-emerald-700 transition-colors p-2 rounded-lg hover:bg-slate-100"
+          className="glass-hover"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#8892a4',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            textDecoration: 'none',
+            transition: 'all 0.15s ease',
+          }}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft style={{ width: 14, height: 14 }} />
           <span>Back to Listings Catalog</span>
         </Link>
         <button
           onClick={() => toggleSave(listing.listing_id)}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
-            isSaved(listing.listing_id)
-              ? "bg-red-50 text-red-600 border-red-200"
-              : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 shadow-sm"
-          }`}
+          className="glass-hover"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '10px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            background: isSaved(listing.listing_id) ? 'rgba(251, 113, 133, 0.12)' : 'rgba(255, 255, 255, 0.04)',
+            border: isSaved(listing.listing_id) ? '1px solid rgba(251, 113, 133, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+            color: isSaved(listing.listing_id) ? '#fb7185' : '#f0f2f8',
+          }}
         >
-          <Bookmark className={`w-4 h-4 ${isSaved(listing.listing_id) ? "fill-red-600 text-red-600" : ""}`} />
+          <Bookmark style={{ width: 14, height: 14, fill: isSaved(listing.listing_id) ? '#fb7185' : 'none', color: isSaved(listing.listing_id) ? '#fb7185' : '#8892a4' }} />
           <span>{isSaved(listing.listing_id) ? "Saved in Favourites" : "Save Property"}</span>
         </button>
       </div>
 
       {/* Main Header Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <div className="flex items-center space-x-2 flex-wrap gap-y-1 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/50">
-                {listing.property_type}
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
-                Portal: {listing.website}
-              </span>
-              {listing.is_verified && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 flex items-center space-x-1 border border-blue-200/60">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Verified Listing</span>
+      <div style={{ ...S.card, overflow: 'hidden' }}>
+        <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ flex: 1, minWidth: '280px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  background: 'rgba(108, 99, 255, 0.12)',
+                  border: '1px solid rgba(108, 99, 255, 0.25)',
+                  color: '#9b95ff',
+                }}>
+                  {listing.property_type}
                 </span>
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: '#8892a4',
+                }}>
+                  Portal: {listing.website}
+                </span>
+                {listing.is_verified && (
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(45, 212, 191, 0.1)',
+                    border: '1px solid rgba(45, 212, 191, 0.25)',
+                    color: '#2dd4bf',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}>
+                    <ShieldCheck style={{ width: 13, height: 13 }} />
+                    <span>Verified Listing</span>
+                  </span>
+                )}
+              </div>
+              <h1 style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#f0f2f8',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.25,
+                margin: '0 0 8px',
+              }}>
+                {listing.apartment_name}
+              </h1>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                color: '#8892a4',
+              }}>
+                <MapPin style={{ width: 14, height: 14, color: '#2dd4bf', flexShrink: 0 }} />
+                <span style={{ textTransform: 'capitalize', fontWeight: 600, color: '#f0f2f8' }}>{listing.locality}</span>
+                <span style={{ color: '#4a5568' }}>•</span>
+                <span>Chennai, Tamil Nadu</span>
+              </div>
+            </div>
+
+            {/* Pricing Box */}
+            <div style={{
+              padding: '20px 24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              textAlign: 'right',
+              flexShrink: 0,
+              minWidth: '220px',
+            }}>
+              <div style={{
+                fontSize: '28px',
+                fontWeight: 900,
+                letterSpacing: '-0.02em',
+                color: '#f0f2f8',
+                lineHeight: 1.1,
+              }}>
+                {formatPrice(listing.price)}
+              </div>
+              {pricePerSqft > 0 && listing.price > 0 && (
+                <div style={{ fontSize: '12px', color: '#8892a4', fontWeight: 500, marginTop: '4px' }}>
+                  ₹{pricePerSqft.toLocaleString("en-IN")} / sqft (effective)
+                </div>
               )}
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              {listing.apartment_name}
-            </h1>
-            <div className="flex items-center space-x-2 text-sm text-slate-500 mt-1">
-              <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span className="capitalize font-semibold text-slate-700">{listing.locality}</span>
-              <span>•</span>
-              <span>Chennai, Tamil Nadu</span>
-            </div>
-          </div>
-
-          {/* Pricing Box */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 md:text-right flex-shrink-0">
-            <div className="text-2xl sm:text-3xl font-black text-slate-900">
-              {formatPrice(listing.price)}
-            </div>
-            {pricePerSqft > 0 && listing.price > 0 && (
-              <div className="text-xs text-slate-500 font-medium mt-0.5">
-                ₹{pricePerSqft.toLocaleString("en-IN")} / sqft (effective)
-              </div>
-            )}
-            <div className="text-[11px] text-emerald-700 font-semibold mt-1">
-              {listing.is_live ? "● Active On Market" : "○ Inactive / Archived"}
-            </div>
-          </div>
-        </div>
-
-        {/* Metric Alert if applicable */}
-        {isSqMeters && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start space-x-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold">Metric Dimension Normalization Applied</div>
-              <p className="mt-0.5 text-amber-800">
-                This listing from {listing.website} was scraped in square meters ({listing.carpet_area} m² carpet, {listing.super_built_up_area} m² super built-up). Our platform has automatically normalized it to {effectiveSqft} sqft to ensure accurate pricing benchmarks.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Specifications Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <BedDouble className="w-4 h-4" />
-              <span>Bedrooms</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">{listing.bedroom} BHK</div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Bath className="w-4 h-4" />
-              <span>Bathrooms</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">{listing.bathroom} Baths</div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Maximize2 className="w-4 h-4" />
-              <span>Carpet Area</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">
-              {effectiveSqft} sqft
-              {isSqMeters && <span className="text-xs text-slate-400 font-normal ml-1">({listing.carpet_area} m²)</span>}
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Layers className="w-4 h-4" />
-              <span>Floor Level</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">
-              Floor {listing.floor} of {listing.total_floors}
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Compass className="w-4 h-4" />
-              <span>Facing</span>
-            </div>
-            <div className="text-base font-bold text-slate-800 capitalize">
-              {listing.facing_direction || "Not specified"}
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Car className="w-4 h-4" />
-              <span>Parking</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">
-              {listing.covered_parking ? `${listing.covered_parking} Covered` : "None"}
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Calendar className="w-4 h-4" />
-              <span>Posted Date</span>
-            </div>
-            <div className="text-base font-bold text-slate-800">
-              {(listing.posted_at || "").slice(0, 10)}
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-              <Sparkles className="w-4 h-4" />
-              <span>Furnishing</span>
-            </div>
-            <div className="text-base font-bold text-slate-800 capitalize">
-              {listing.furnishing || "Unfurnished"}
-            </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <h3 className="text-sm font-bold text-slate-900 mb-2">Seller Description</h3>
-          <p className="text-sm text-slate-600 leading-relaxed bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
-            {listing.description || "No description provided."}
-          </p>
-        </div>
-
-        {/* Seller / Agent Contact Card */}
-        <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
-              <User className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
-                <span>{listing.posted_by_name || "Authorized Seller"}</span>
-                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-900 font-bold">
-                  {listing.posted_by}
-                </span>
-              </div>
-              <div className="text-xs text-slate-500 font-mono mt-0.5">
-                {listing.posted_by_contact || "Direct Contact"}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginTop: '8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: listing.is_live ? '#2dd4bf' : '#4a5568',
+              }}>
+                <span style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: listing.is_live ? '#2dd4bf' : '#4a5568',
+                  boxShadow: listing.is_live ? '0 0 6px rgba(45, 212, 191, 0.6)' : 'none',
+                }} />
+                <span>{listing.is_live ? "Active On Market" : "Inactive / Archived"}</span>
               </div>
             </div>
           </div>
-          <a
-            href={`tel:${listing.posted_by_contact}`}
-            className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
-          >
-            <Phone className="w-4 h-4" />
-            <span>Call Seller</span>
-          </a>
+
+          {/* Metric Alert if applicable */}
+          {isSqMeters && (
+            <div style={{
+              padding: '16px 20px',
+              borderRadius: '12px',
+              background: 'rgba(251, 191, 36, 0.06)',
+              border: '1px solid rgba(251, 191, 36, 0.25)',
+              fontSize: '12px',
+              color: '#fbbf24',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+            }}>
+              <AlertTriangle style={{ width: 18, height: 18, color: '#fbbf24', flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: '#fbbf24', marginBottom: '2px' }}>
+                  Metric Dimension Normalization Applied
+                </div>
+                <p style={{ margin: 0, color: 'rgba(251, 191, 36, 0.85)', lineHeight: 1.5 }}>
+                  This listing from {listing.website} was scraped in square meters ({listing.carpet_area} m² carpet, {listing.super_built_up_area} m² super built-up). Our platform has automatically normalized it to {effectiveSqft} sqft to ensure accurate pricing benchmarks.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Specifications Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+            paddingTop: '20px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+          }}>
+            {specs.map(({ icon: Icon, label, value, capitalize }) => (
+              <div
+                key={label}
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#8892a4',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}>
+                  <Icon style={{ width: 13, height: 13, color: '#6c63ff' }} />
+                  <span>{label}</span>
+                </div>
+                <div style={{
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  color: '#f0f2f8',
+                  textTransform: capitalize ? 'capitalize' : 'none',
+                }}>
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Description */}
+          <div>
+            <h3 style={{ ...S.label, marginBottom: '10px' }}>Seller Description</h3>
+            <p style={{
+              fontSize: '13px',
+              color: '#8892a4',
+              lineHeight: 1.7,
+              background: 'rgba(255, 255, 255, 0.02)',
+              padding: '18px 20px',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              margin: 0,
+              whiteSpace: 'pre-line',
+            }}>
+              {listing.description || "No description provided."}
+            </p>
+          </div>
+
+          {/* Seller / Agent Contact Card */}
+          <div style={{
+            padding: '20px 24px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, rgba(108, 99, 255, 0.08) 0%, rgba(22, 27, 39, 0.6) 100%)',
+            border: '1px solid rgba(108, 99, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(108, 99, 255, 0.2)',
+                border: '1px solid rgba(108, 99, 255, 0.4)',
+                color: '#9b95ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <User style={{ width: 20, height: 20 }} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 700, color: '#f0f2f8' }}>
+                    {listing.posted_by_name || "Authorized Seller"}
+                  </span>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(108, 99, 255, 0.15)',
+                    color: '#9b95ff',
+                    border: '1px solid rgba(108, 99, 255, 0.25)',
+                  }}>
+                    {listing.posted_by}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#8892a4', fontFamily: 'monospace', marginTop: '3px' }}>
+                  {listing.posted_by_contact || "Direct Contact"}
+                </div>
+              </div>
+            </div>
+            <a
+              href={`tel:${listing.posted_by_contact}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '10px 22px',
+                background: 'linear-gradient(135deg, #6c63ff 0%, #5850ec 100%)',
+                color: '#ffffff',
+                fontSize: '13px',
+                fontWeight: 600,
+                borderRadius: '10px',
+                boxShadow: '0 4px 14px rgba(108, 99, 255, 0.35)',
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+                cursor: 'pointer',
+              }}
+            >
+              <Phone style={{ width: 15, height: 15 }} />
+              <span>Call Seller</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '12px 32px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(0, 0, 0, 0.15)',
+          borderRadius: '0 0 16px 16px',
+          fontSize: '11px',
+          color: '#8892a4',
+        }}>
+          <span style={{ fontFamily: 'monospace', color: '#4a5568' }}>ID: {listing.listing_id}</span>
+          <span>Source: <strong style={{ color: '#f0f2f8' }}>{listing.website}</strong></span>
         </div>
       </div>
 
       {/* Comparable / Similar Listings Section */}
       {similarListings.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Similar Properties in {listing.locality}</h2>
-              <p className="text-xs text-slate-500">Comparable {listing.bedroom} BHK properties in the same neighborhood</p>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#f0f2f8', margin: 0 }}>
+              Similar Properties in {listing.locality}
+            </h2>
+            <p style={{ fontSize: '12px', color: '#8892a4', margin: '4px 0 0' }}>
+              Comparable {listing.bedroom} BHK properties in the same neighborhood
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
             {similarListings.map((sim) => (
               <Link
                 key={sim.listing_id}
                 href={`/listings/${sim.listing_id}`}
-                className="bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-md transition-all space-y-2 block group"
+                className="glass-hover"
+                style={{
+                  ...S.card,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  textDecoration: 'none',
+                  overflow: 'hidden',
+                }}
               >
-                <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-                  {sim.bedroom} BHK · {sim.property_type}
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+                  <div style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: '#9b95ff',
+                  }}>
+                    {sim.bedroom} BHK · {sim.property_type}
+                  </div>
+                  <div style={{
+                    fontWeight: 700,
+                    color: '#f0f2f8',
+                    fontSize: '14px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {sim.apartment_name}
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#f0f2f8', letterSpacing: '-0.02em' }}>
+                    {formatPrice(sim.price)}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#8892a4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{sim.carpet_area} sqft</span>
+                    <span style={{ textTransform: 'capitalize' }}>{sim.locality}</span>
+                  </div>
                 </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors truncate">
-                  {sim.apartment_name}
-                </div>
-                <div className="text-base font-extrabold text-slate-900">
-                  {formatPrice(sim.price)}
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  {sim.carpet_area} sqft · {sim.locality}
+
+                <div style={{
+                  padding: '8px 16px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: 'rgba(0, 0, 0, 0.15)',
+                  borderRadius: '0 0 16px 16px',
+                }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#4a5568' }}>{sim.listing_id}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#6c63ff' }}>View Details →</span>
                 </div>
               </Link>
             ))}
